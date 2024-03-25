@@ -1,0 +1,80 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sliding Tile Puzzle</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+</head>
+
+<body>
+    <button id="new-game-button">New Game</button>
+
+    <div id="game-board"></div>
+
+    <button id="move-down" class="make-move-button">Down</button>
+    <button id="move-up" class="make-move-button">Up</button>
+    <button id="move-right" class="make-move-button">Right</button>
+    <button id="move-left" class="make-move-button">Left</button>
+
+
+    <script>
+    // Note: unresolved variable can be ignored since board is loaded dynamically as a field of data
+    // (instance of slidingGrid), which is why IDE doesn't recognize
+
+    $(document).ready(function() {
+        $('#new-game-button').click(function() {
+            $.getJSON('/start/', function(data) {
+                updateBoard(data.board);
+                $('#game-board').css('display', 'grid');
+                $('#new-game-button').hide();
+            });
+        });
+    
+        // Move buttons
+        $('#move-down').click(function() { makeMove(0); });
+        $('#move-up').click(function() { makeMove(1); });
+        $('#move-right').click(function() { makeMove(2); });
+        $('#move-left').click(function() { makeMove(3); });
+    
+        function makeMove(direction) {
+            $.getJSON('/move/', {direction: direction}, function(data) {
+                if (data.success) {
+                    updateBoard(data.board);
+                    if (data.solved) {
+                        alert("Congratulations, you've solved the puzzle!");
+                    }
+                } else {
+                    alert("Move not possible.");
+                }
+            });
+        }
+    
+        function updateBoard(board) {
+            const boardDiv = $('#game-board');
+            boardDiv.empty();
+        
+            // Dynamically set the grid size based on the board's length
+            const gridSize = board.length;
+            boardDiv.css({
+                'display': 'grid',
+                'grid-template-columns': `repeat(${gridSize}, 100px)` // Dynamically set the number of columns
+            });
+        
+            // Populate the board with tiles
+            board.forEach(row => {
+                row.forEach(tile => {
+                    const tileDiv = $('<div class="tile">').text(tile || ''); // Use an empty string for the 0 tile
+                    boardDiv.append(tileDiv);
+                });
+            });
+        
+            boardDiv.show();
+        }
+    });
+
+    </script>
+</body>
+</html>

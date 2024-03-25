@@ -1,0 +1,24 @@
+.tile {
+    width: 100px;
+    height: 100px;
+    background-color: #e4e4e4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    border: 1px solid #ccc;
+}
+
+#new-game-button, .make-move-button {
+    display: block;
+    margin: 20px auto;
+}
+
+#game-board {
+    display: none;
+    grid-gap: 5px;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+}
+
