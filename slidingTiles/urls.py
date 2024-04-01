@@ -18,9 +18,11 @@ from django.contrib import admin
 from django.urls import path
 from . import views
 
+# Add more urls here!
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.game_view, name='game'),
+    path('', views.landing_view, name='landing'),
+    path('game/', views.game_view, name='game'),
     path('start/', views.start_game, name='start_game'),
     path('move/', views.make_move, name='make_move'),
 ]
