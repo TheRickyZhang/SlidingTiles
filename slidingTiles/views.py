@@ -3,9 +3,12 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.contrib.messages import get_messages
-from slidingTiles.SlidingGrid import SlidingGrid  # Ensure SlidingGrid is updated as discussed
+from slidingTiles import ai
 import json
 import logging
+
+from slidingTiles.SlidingGrid import slidingGrid
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,11 +40,9 @@ def landing_view(request):
 # Expects: {rows, cols}
 def start_game(request):
     # Retrieve rows and cols from the session (default always 3)
-    rows = int(request.GET.get('rows', 3))
-    cols = int(request.GET.get('cols', 3))
-    request.session['rows'] = rows
-    request.session['cols'] = cols
-    game = SlidingGrid(rows, cols)
+    rows = int(request.GET.get('rows', 4))
+    cols = int(request.GET.get('cols', 4))
+    game = slidingGrid(rows, cols)
     game.shuffle()
 
     # Save the game state in the session
@@ -53,12 +54,22 @@ def start_game(request):
 def make_move(request):
     direction = int(request.GET.get('direction', 0))
     grid = json.loads(request.session.get('game_board'))  # Deserialize grid from JSON
-    rows = int(request.session.get('rows', 3))
-    cols = int(request.session.get('cols', 3))
 
-    game = SlidingGrid(rows, cols, grid)
+    game = slidingGrid(len(grid), len(grid[0]), grid)
+
     if not game.move(direction):
         return JsonResponse({'success': False, 'error': 'Move not possible'})
 
     request.session['game_board'] = json.dumps(game.grid)
     return JsonResponse({'success': True, 'board': game.grid, 'solved': game.is_solved()})
+
+
+def solve_puzzle(request):
+    try:
+        grid = json.loads(request.session.get('game_board'))
+        idaStar_moves = ai.idaStar(grid)
+
+        return JsonResponse({'success': True, 'moves': idaStar_moves})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
