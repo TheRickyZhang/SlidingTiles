@@ -10,11 +10,6 @@ $(document).ready(function() {
         makeMove(direction);
     });
 
-    $('#new-game-button').click(function() {
-        gameActive = true;
-        initializeGame(rows, cols);
-    });
-
     $(document).keydown(function(e) {
         if (!gameActive) return;
         let directionMap = { 'ArrowDown': '1,0', 'ArrowUp': '-1,0', 'ArrowRight': '0,1', 'ArrowLeft': '0,-1' };
@@ -24,42 +19,12 @@ $(document).ready(function() {
         }
     });
 
-    $('#IDA-solve-button').click(function() {
+    $('#auto-solve-button').click(function() {
         if (!gameActive) return;
         startAutoSolve();
     });
 
-    $('#greedy-solve-button').click(function() {
-        if (!gameActive) return;
-        startGreedySolve();
-    });
-
-function startGreedySolve() {
-    gameActive = false;
-    $.ajax({
-        url: '/greedy_solve/',  // Make sure this URL matches the one in your Django urls.py
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                animateSolution(response.moves);
-            } else {
-                gameActive = true;
-                console.error('Greedy solve failed:', response.error);
-                alert('Greedy solve failed: ' + response.error);
-            }
-        },
-        error: function(xhr, status, error) {
-            gameActive = true;
-            console.error('AJAX error during greedy solve:', error);
-            alert('AJAX error during greedy solve: ' + error);
-        }
-    });
-}
-
-
     function startAutoSolve() {
-        gameActive = false;
         $.ajax({
             url: '/auto_solve/',  // Make sure this URL matches the one in your Django urls.py
             type: 'GET',
@@ -68,13 +33,11 @@ function startGreedySolve() {
                 if (response.success) {
                     animateSolution(response.moves);
                 } else {
-                    gameActive = true;
                     console.error('Auto-solve failed:', response.error);
                     alert('Auto-solve failed: ' + response.error);
                 }
             },
             error: function(xhr, status, error) {
-                gameActive = true;
                 console.error('AJAX error during auto-solve:', error);
                 alert('AJAX error during auto-solve: ' + error);
             }
@@ -87,7 +50,7 @@ function startGreedySolve() {
         function performNextMove() {
             if (currentMove < moves.length) {
                 const move = moves[currentMove];
-                makeMove(move, true);
+                makeMove(move);
                 currentMove++;
                 setTimeout(performNextMove, 500);
             }
@@ -103,8 +66,8 @@ function startGreedySolve() {
         });
     }
 
-    function makeMove(direction, bypass = false) {
-        if (!gameActive && !bypass) return;
+    function makeMove(direction) {
+        if (!gameActive) return;
 
         const directionToButtonId = {
             '1,0': "#move-down",

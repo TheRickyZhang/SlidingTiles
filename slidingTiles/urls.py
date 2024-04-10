@@ -28,5 +28,6 @@ urlpatterns = [
     path('start/', views.start_game, name='start_game'),
     path('move/', views.make_move, name='make_move'),
     path('auto_solve/', auto_solve, name='auto_solve'),
+    path('greedy_solve/', views.greedy_solve, name='greedy_solve'),
 ]
 

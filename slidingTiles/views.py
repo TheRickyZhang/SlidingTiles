@@ -91,3 +91,18 @@ def auto_solve(request):
         logger.error(f"Auto-solve failed: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
 
+def greedy_solve(request):
+    try:
+        grid = json.loads(request.session.get('game_board'))
+        game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
+        greedy_moves, _, _ = ai.greedyFirstBest(game)
+
+        # Convert moves from tuples to strings
+        moves_str = [f"{move[0]},{move[1]}" for move in greedy_moves]
+
+        return JsonResponse({'success': True, 'moves': moves_str})
+    except Exception as e:
+        logger.error(f"Greedy solve failed: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+

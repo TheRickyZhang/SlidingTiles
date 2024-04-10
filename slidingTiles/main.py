@@ -6,8 +6,8 @@ global aiMoves
 def main():
 
     strt_grid = slidingGrid()
-    strt_grid.consoleprint()
-    strt_grid.shuffle()
+    #strt_grid.consoleprint()
+    #strt_grid.shuffle()
     #print("\nfsjdljfsgjfk;sd\n")
     strt_grid.consoleprint()
 

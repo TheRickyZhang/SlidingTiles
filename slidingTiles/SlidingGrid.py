@@ -55,7 +55,7 @@ class slidingGrid:
             print(' '.join(str(cell).rjust(2, ' ') for cell in row))
 
     def move(self, dir):
-        print(dir)
+        #print(dir)
         newBlankPos = (self.blankPos[0] + dir[0], self.blankPos[1] + dir[1])
 
         if newBlankPos[0] < 0 or newBlankPos[0] >= self.boardSize \
