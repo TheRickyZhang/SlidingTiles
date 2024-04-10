@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-    {# Try to redirect all major errors back here with this message #}
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -20,11 +19,11 @@
     {% endif %}
 
     <form action="{% url 'game' %}" method="get">
-        <label for="rows">Number of Rows (2-12):</label>
-        <input type="number" id="rows" name="rows" min="4" max="4" required>
-
-        <label for="columns">Number of Columns (2-12):</label>
-        <input type="number" id="columns" name="columns" min="4" max="4" required>
+        <label for="gridSize">Grid Size:</label>
+        <select id="gridSize" name="gridSize" required>
+            <option value="3">3 x 3</option>
+            <option value="4" selected>4 x 4</option>
+        </select>
 
         <button type="submit">Start Game</button>
     </form>
