@@ -6,27 +6,32 @@ class slidingGrid:
     # Initializes grid with numbers from 0 to rows*cols - 1, where 0 is the empty space
     UP = (1, 0)
     DOWN = (-1, 0)
-    LEFT = (0, 1)
-    RIGHT = (0, -1)
+    LEFT = (0, -1)
+    RIGHT = (0, 1)
 
     DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
-    def __init__(self, boardSize=4, shuffle=True):
+    def __init__(self, boardSize=4, shuffle=True, grid_=None):
         self.boardSize = boardSize
-        self.rows = 4
-        self.cols = 4
-        self.board = [[0] * boardSize for i in range(boardSize)]
-        self.blankPos = (boardSize - 1, boardSize - 1)
+        self.rows = boardSize
+        self.cols = boardSize
+        self.blankPos = None
 
-        for i in range(boardSize):
-            for j in range(boardSize):
-                self.board[i][j] = i * boardSize + j + 1
+        if grid_ is None:
+            self.board = [[i * boardSize + j + 1 for j in range(boardSize)] for i in range(boardSize)]
+            self.board[boardSize - 1][boardSize - 1] = 0
+            self.blankPos = (boardSize - 1, boardSize - 1)
+            if shuffle:
+                self.shuffle()
+        else:
+            self.board = grid_
+            self.blankPos = self.find_blank()
 
-        # 0 represents blank square, init in bottom right corner of board
-        self.board[self.blankPos[0]][self.blankPos[1]] = 0
-
-        if shuffle:
-            self.shuffle()
+    def find_blank(self):
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if self.board[i][j] == 0:
+                    return i, j
 
     def __str__(self):
         outStr = ''
@@ -50,6 +55,7 @@ class slidingGrid:
             print(' '.join(str(cell).rjust(2, ' ') for cell in row))
 
     def move(self, dir):
+        print(dir)
         newBlankPos = (self.blankPos[0] + dir[0], self.blankPos[1] + dir[1])
 
         if newBlankPos[0] < 0 or newBlankPos[0] >= self.boardSize \

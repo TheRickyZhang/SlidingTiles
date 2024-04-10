@@ -19,7 +19,7 @@ def init(boardSize):
             print("Group {}: {}, {:,} entries.".format(i,groups[i],len(patternDbDict[i])))
 
 def idaStar(puzzle):
-    if puzzle.is_solved():
+    if puzzle.checkWin():
         return []
     if not patternDbDict:
         init(puzzle.boardSize)
@@ -40,22 +40,29 @@ def idaStar(puzzle):
 
 
 def search(path, g, bound, dirs):
-    print(f"Searching... Depth: {len(path)}, Bound: {bound}, Moves: {dirs}")
+    #print(f"Searching... Depth: {len(path)}, Bound: {bound}, Moves: {dirs}")
     cur = path[-1]
     f = g + hScore(cur)
 
     if f > bound:
         return f
 
-    if cur.is_solved():
+    if cur.checkWin():
         return True
     min = INF
 
     opposite_directions = {0: 2, 1: 3, 2: 0, 3: 1}
-    for dir in [0, 1, 2, 3]:
-        if dirs and opposite_directions[dir] == dirs[-1]:
+    UP = (1, 0)
+    DOWN = (-1, 0)
+    LEFT = (0, 1)
+    RIGHT = (0, -1)
+
+    DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
+    for dir in DIRECTIONS:
+        if dirs and (-dir[0], -dir[1]) == dirs[-1]:
             continue
         validMove, simPuzzle = cur.simulateMove(dir)
+        #print(f"Direction: {dir}, Valid Move: {validMove}, Simulated Puzzle: {simPuzzle}")
 
         if not validMove or simPuzzle in path:
             continue
@@ -85,9 +92,9 @@ def hScore(puzzle):
             print("No pattern found in DB, using manhattan dist")
             for i in range(puzzle.boardSize):
                 for j in range(puzzle.boardSize):
-                    if puzzle.grid[i][j] != 0 and puzzle.grid[i][j] in group:
-                        destPos = ((puzzle.grid[i][j] - 1) // puzzle.boardSize,
-                                   (puzzle.grid[i][j] - 1) % puzzle.boardSize)
+                    if puzzle.board[i][j] != 0 and puzzle.board[i][j] in group:
+                        destPos = ((puzzle.board[i][j] - 1) // puzzle.boardSize,
+                                   (puzzle.board[i][j] - 1) % puzzle.boardSize)
                         h += abs(destPos[0] - i)
                         h += abs(destPos[1] - j)
 

@@ -35,33 +35,37 @@ def landing_view(request):
 
 # Expects: {rows, cols}
 def start_game(request):
-    rows = int(request.GET.get('rows', 4))
-    cols = int(request.GET.get('cols', 4))
-    game = slidingGrid(rows, cols)
+    #rows = int(request.GET.get('rows', 4))
+    #cols = int(request.GET.get('cols', 4))
+    game = slidingGrid(boardSize=4, shuffle=True, grid_=None)
     game.shuffle()
 
-    request.session['game_board'] = json.dumps(game.grid)
-    return JsonResponse({'board': game.grid})
+    request.session['game_board'] = json.dumps(game.board)
+    return JsonResponse({'board': game.board})
 
-# Expects: {direction}  (others loaded from session)
 def make_move(request):
-    # Map direction parameter to direction tuple
     direction_map = {
-        'down': DOWN,
-        'up': UP,
-        'right': RIGHT,
-        'left': LEFT
+        '-1,0': DOWN,
+        '1,0': UP,
+        '0,-1': RIGHT,
+        '0,1': LEFT,
+        'UP':UP,
+        'DOWN':DOWN,
+        'LEFT':LEFT,
+        'RIGHT':RIGHT
     }
-    direction_tuple = direction_map.get(request.GET.get('direction', 'down'), DOWN)
+    direction_tuple = direction_map.get(request.GET.get('direction', 0), 0)
+    #direction_tuple = direction_map.get(request.GET.get('direction', 'down'), DOWN)
     grid = json.loads(request.session.get('game_board'))
 
-    game = slidingGrid(len(grid), len(grid[0]), grid)
+    game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
 
     if not game.move(direction_tuple):
         return JsonResponse({'success': False, 'error': 'Move not possible'})
 
-    request.session['game_board'] = json.dumps(game.grid)
-    return JsonResponse({'success': True, 'board': game.grid, 'solved': game.is_solved()})
+    request.session['game_board'] = json.dumps(game.board)
+    return JsonResponse({'success': True, 'board': game.board, 'solved': game.checkWin()})
+
 
 def solve_puzzle(request):
     try:
@@ -76,9 +80,14 @@ def solve_puzzle(request):
 def auto_solve(request):
     try:
         grid = json.loads(request.session.get('game_board'))
-        ida_star_moves = ai.idaStar(grid)
+        game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
+        ida_moves = ai.idaStar(game)
 
-        return JsonResponse({'success': True, 'moves': ida_star_moves})
+        # Convert moves from tuples to strings
+        moves_str = [f"{move[0]},{move[1]}" for move in ida_moves]
+
+        return JsonResponse({'success': True, 'moves': moves_str})
     except Exception as e:
         logger.error(f"Auto-solve failed: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
+
