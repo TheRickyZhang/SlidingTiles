@@ -44,7 +44,7 @@ class slidingGrid:
         return self.board[key]
 
     def shuffle(self):
-        nShuffles = 5000
+        nShuffles = 50
 
         for i in range(nShuffles):
             dir = choice(self.DIRECTIONS)
@@ -101,3 +101,6 @@ class slidingGrid:
     def simulateMove(self, dir):
         simPuzzle = deepcopy(self)
         return simPuzzle.move(dir), simPuzzle
+
+    def state(self):
+        return deepcopy(self.board)

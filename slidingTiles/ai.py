@@ -32,7 +32,7 @@ def init(boardSize):
 
 def idaStar(puzzle):
     if puzzle.checkWin():
-        return []
+        return [], {}
     if not patternDbDict:
         init(puzzle.boardSize)
 
@@ -40,14 +40,22 @@ def idaStar(puzzle):
     bound = hScore(puzzle)
     path = [puzzle]
     dirs = []
+
+    # Initialize the root of the decision tree
+    decision_tree = {
+        "state": puzzle.state(),
+        "move": None,
+        "children": []
+    }
+
     while True:
-        rem = search(path, 0, bound, dirs)
+        rem = search(path, 0, bound, dirs, decision_tree)
         if rem == True:
             tDelta = (perf_counter_ns()-t1)/NANO_TO_SEC
             print("Took {} seconds to find a solution of {} moves".format(tDelta, len(dirs)))
-            return dirs
+            return dirs, decision_tree  # Return the decision tree root node
         elif rem == INF:
-            return None
+            return None, {}
         bound = rem
 
 def greedyFirstBest(puzzle):
@@ -80,38 +88,35 @@ def greedyFirstBest(puzzle):
 
     return None, 0, puzzle
 
-def search(path, g, bound, dirs):
-    #print(f"Searching... Depth: {len(path)}, Bound: {bound}, Moves: {dirs}")
+
+def search(path, g, bound, dirs, tree_node):
     cur = path[-1]
     f = g + hScore(cur)
 
     if f > bound:
         return f
-
     if cur.checkWin():
         return True
     min = INF
 
-    opposite_directions = {0: 2, 1: 3, 2: 0, 3: 1}
-    UP = (1, 0)
-    DOWN = (-1, 0)
-    LEFT = (0, 1)
-    RIGHT = (0, -1)
-
-    DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
-    for dir in DIRECTIONS:
-        if dirs and (-dir[0], -dir[1]) == dirs[-1]:
+    for _dir in cur.DIRECTIONS:
+        if dirs and (-_dir[0], -_dir[1]) == dirs[-1]:
             continue
-        validMove, simPuzzle = cur.simulateMove(dir)
-        #print(f"Direction: {dir}, Valid Move: {validMove}, Simulated Puzzle: {simPuzzle}")
-
+        validMove, simPuzzle = cur.simulateMove(_dir)
         if not validMove or simPuzzle in path:
             continue
 
         path.append(simPuzzle)
-        dirs.append(dir)
+        dirs.append(_dir)
 
-        t = search(path, g + 1, bound, dirs)
+        child_node = {
+            "state": simPuzzle.state(),
+            "move": _dir,
+            "children": []
+        }
+        tree_node["children"].append(child_node)
+
+        t = search(path, g + 1, bound, dirs, child_node)
         if t == True:
             return True
         if t < min:
@@ -120,7 +125,12 @@ def search(path, g, bound, dirs):
         path.pop()
         dirs.pop()
 
+    # If a node has no children added, it's a leaf, so remove the children property
+    if not tree_node["children"]:
+        tree_node.pop("children", None)
+
     return min
+
 
 def hScore(puzzle):
     h = 0

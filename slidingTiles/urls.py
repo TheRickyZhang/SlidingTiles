@@ -17,7 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from . import views
-from .views import auto_solve
 
 # Add more urls here!
 urlpatterns = [
@@ -27,7 +26,7 @@ urlpatterns = [
     path('solve/', views.solve_puzzle, name='solve_puzzle'),
     path('start/', views.start_game, name='start_game'),
     path('move/', views.make_move, name='make_move'),
-    path('auto_solve/', auto_solve, name='auto_solve'),
+    path('ida_solve/', views.ida_solve, name='ida_solve'),
     path('greedy_solve/', views.greedy_solve, name='greedy_solve'),
 ]
 

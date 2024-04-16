@@ -77,19 +77,19 @@ def solve_puzzle(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-def auto_solve(request):
+def ida_solve(request):
     try:
         grid = json.loads(request.session.get('game_board'))
         game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
-        ida_moves = ai.idaStar(game)
+        ida_moves, decision_tree = ai.idaStar(game)
 
-        # Convert moves from tuples to strings
         moves_str = [f"{move[0]},{move[1]}" for move in ida_moves]
 
-        return JsonResponse({'success': True, 'moves': moves_str})
+        return JsonResponse({'success': True, 'moves': moves_str, 'decisionTree': decision_tree})
     except Exception as e:
         logger.error(f"Auto-solve failed: {str(e)}")
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({'success': False, 'error': str(e), 'decisionTree': []})
+
 
 def greedy_solve(request):
     try:
