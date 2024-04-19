@@ -13,72 +13,93 @@
     <style>
         #main-container {
             display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+        }
+        #game-and-tree-container {
+            display: flex;
             justify-content: space-between;
         }
         #game-container {
             width: 50%;
+            display: flex;
+            justify-content: space-around;
         }
         #tree-container {
-            width: 50%;
+            width: 60%;
             height: 800px;
             overflow: scroll;
+        }
+        #game-board1 {
+            margin-right: 20px; /* Adjust the value as needed */
+        }
+
+        #game-board2 {
+            margin-left: 20px; /* Adjust the value as needed */
         }
     </style>
 </head>
 
 <body data-rows="{{ rows }}" data-cols="{{ cols }}">
+    <!-- Back button -->
     <form action="{% url 'landing' %}" method="get">
         <button type="submit" id="back-button" class="back-button">Back</button>
     </form>
 
+    <!-- Main container -->
     <div id="main-container">
-        <div id="left-tree-container" class="tree-container">
-            <h2>Greedy Solve</h2>
-            <div>
-                <span>Time taken: </span>
-                <span id="greedyTimeTaken"></span>
+        <!-- Game and tree container -->
+        <div id="game-and-tree-container">
+            <!-- Left tree container -->
+            <div id="left-tree-container" class="tree-container">
+                <h2>Greedy Solve</h2>
+                <div>
+                    <span>Time taken: </span>
+                    <span id="greedyTimeTaken"></span>
+                </div>
+                <div>
+                    <span>Number of moves: </span>
+                    <span id="greedyNumMoves"></span>
+                </div>
+                <div id="left-tree-svg-container">
+                    <!-- The SVG canvas for the left tree will be appended here by D3.js -->
+                </div>
             </div>
-            <div>
-                <span>Number of moves: </span>
-                <span id="greedyNumMoves"></span>
+
+            <!-- Game container -->
+            <div id="game-container">
+                <div id="game-board1"></div>
+                <div id="game-board2"></div>
             </div>
-            <div id="left-tree-svg-container">
-                <!-- The SVG canvas for the left tree will be appended here by D3.js -->
+
+            <!-- Right tree container -->
+            <div id="right-tree-container" class="tree-container">
+                <h2>IDA* Solve</h2>
+                <div>
+                    <span>Time taken: </span>
+                    <span id="idaTimeTaken"></span>
+                </div>
+                <div>
+                    <span>Number of moves: </span>
+                    <span id="idaNumMoves"></span>
+                </div>
+                <div id="right-tree-svg-container">
+                    <!-- The SVG canvas for the right tree will be appended here by D3.js -->
+                </div>
             </div>
         </div>
 
-        <div id="game-container" style="width: 50%;">
-            <div id="game-board"></div>
-
-            <div id="button-container">
-                <div></div>
-                <button id="move-up" class="make-move-button" data-direction="-1,0">Up</button>
-                <div></div>
-                <button id="new-game-button" class="control-button">New Game</button>
-                <button id="both-solve-button" class="solve-button">Solve both</button>
-                <button id="greedy-solve-button" class="solve-button" >Greedy-Solve*</button>
-                <button id="move-left" class="make-move-button" data-direction="0,-1">Left</button>
-                <button id="move-right" class="make-move-button" data-direction="0,1">Right</button>
-                <button id="IDA-solve-button" class="solve-button">IDA-solve</button>
-
-                <div></div>
-                <button id="move-down" class="make-move-button" data-direction="1,0">Down</button>
-                <div></div>
-            </div>
-        </div>
-        <div id="right-tree-container" class="tree-container">
-            <h2>IDA* Solve</h2>
-            <div>
-                <span>Time taken: </span>
-                <span id="idaTimeTaken"></span>
-            </div>
-            <div>
-                <span>Number of moves: </span>
-                <span id="idaNumMoves"></span>
-            </div>
-            <div id="right-tree-svg-container">
-                <!-- The SVG canvas for the right tree will be appended here by D3.js -->
-            </div>
+        <!-- Button container -->
+        <div id="button-container">
+            <button id="move-up" class="make-move-button" data-direction="-1,0">Up</button>
+            <button id="new-game-button" class="control-button">New Game</button>
+            <button id="both-solve-button" class="solve-button">Solve both</button>
+            <button id="greedy-solve-button" class="solve-button">Greedy-Solve*</button>
+            <button id="move-left" class="make-move-button" data-direction="0,-1">Left</button>
+            <button id="move-right" class="make-move-button" data-direction="0,1">Right</button>
+            <button id="IDA-solve-button" class="solve-button">IDA-solve</button>
+            <button id="move-down" class="make-move-button" data-direction="1,0">Down</button>
         </div>
     </div>
 </body>

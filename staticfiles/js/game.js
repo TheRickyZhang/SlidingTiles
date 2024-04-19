@@ -2,6 +2,9 @@ $(document).ready(function() {
     let rows = $('body').data('rows');
     let cols = $('body').data('cols');
     let gameActive = true;
+    let gameBoard1 = $('#game-board1'); // First game board
+    let gameBoard2 = $('#game-board2'); // Second game board
+
 
     initializeGame(rows, cols);
 
@@ -20,7 +23,8 @@ $(document).ready(function() {
         let directionMap = { 'ArrowDown': '1,0', 'ArrowUp': '-1,0', 'ArrowRight': '0,1', 'ArrowLeft': '0,-1' };
         let direction = directionMap[e.key];
         if (direction !== undefined) {
-            makeMove(direction);
+            makeMove(direction); // Make move on gameBoard1
+            makeMove(direction, false, true); // Make move on gameBoard2
         }
     });
 
@@ -118,15 +122,16 @@ $(document).ready(function() {
 
         performNextMove();
     }
-
     function initializeGame(rows, cols) {
         $.getJSON('/start/', { 'rows': rows, 'cols': cols }, function(data) {
-            updateBoard(data.board);
-            $('#game-board').css('display', 'grid');
+            updateBoard(data.board); // Initialize gameBoard1
+            updateBoard(data.board, true); // Initialize gameBoard2
+            gameBoard1.css('display', 'grid');
+            gameBoard2.css('display', 'grid');
         });
     }
 
-    function makeMove(direction, bypass = false) {
+    function makeMove(direction, bypass = false, isGreedy = false) {
         if (!gameActive && !bypass) return;
 
         const directionToButtonId = {
@@ -141,7 +146,7 @@ $(document).ready(function() {
         $.getJSON('/move/', { 'direction': direction }, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board);
+                updateBoard(data.board, isGreedy);
 
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
 
@@ -155,8 +160,9 @@ $(document).ready(function() {
         });
     }
 
-    function updateBoard(board) {
-        let boardDiv = $('#game-board').empty().css({
+    function updateBoard(board, isGreedy = false) {
+        let boardDiv = isGreedy ? gameBoard2 : gameBoard1; // Use the correct game board
+        boardDiv.empty().css({
             'display': 'grid',
             'grid-template-columns': `repeat(${board[0].length}, 100px)`
         });
