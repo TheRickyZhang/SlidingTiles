@@ -11,6 +11,7 @@ $(document).ready(function() {
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
         makeMove(direction);
+        makeMove(direction, false, true);
     });
 
     $('#new-game-button').click(function() {
@@ -22,6 +23,7 @@ $(document).ready(function() {
         if (!gameActive) return;
         let directionMap = { 'ArrowDown': '1,0', 'ArrowUp': '-1,0', 'ArrowRight': '0,1', 'ArrowLeft': '0,-1' };
         let direction = directionMap[e.key];
+        console.log('Direction:', direction);
         if (direction !== undefined) {
             makeMove(direction); // Make move on gameBoard1
             makeMove(direction, false, true); // Make move on gameBoard2
@@ -66,7 +68,7 @@ $(document).ready(function() {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
-                    animateSolution(response.moves);
+                    animateSolution(response.moves, true);
                 } else {
                     gameActive = true;
                     console.error('Greedy solve failed:', response.error);
@@ -108,13 +110,13 @@ $(document).ready(function() {
         });
     }
 
-    function animateSolution(moves) {
+    function animateSolution(moves, isGreedy = false) {
         let currentMove = 0;
 
         function performNextMove() {
             if (currentMove < moves.length) {
                 const move = moves[currentMove];
-                makeMove(move, true);
+                makeMove(move, true, isGreedy);
                 currentMove++;
                 setTimeout(performNextMove, 250);
             }
