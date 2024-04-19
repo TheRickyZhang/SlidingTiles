@@ -30,9 +30,9 @@
     <form action="{% url 'landing' %}" method="get">
         <button type="submit" id="back-button" class="back-button">Back</button>
     </form>
-    
+
     <div id="main-container">
-        <div id="left-tree-container" style="width: 25%; height: 800px; overflow: scroll;">
+        <div id="left-tree-container" class="tree-container">
             <h2>Greedy Solve</h2>
             <div>
                 <span>Time taken: </span>
@@ -49,7 +49,7 @@
 
         <div id="game-container" style="width: 50%;">
             <div id="game-board"></div>
-            
+
             <div id="button-container">
                 <div></div>
                 <button id="move-up" class="make-move-button" data-direction="-1,0">Up</button>
@@ -66,7 +66,7 @@
                 <div></div>
             </div>
         </div>
-        <div id="right-tree-container" style="width: 25%; height: 800px; overflow: scroll;">
+        <div id="right-tree-container" class="tree-container">
             <h2>IDA* Solve</h2>
             <div>
                 <span>Time taken: </span>
@@ -80,5 +80,6 @@
                 <!-- The SVG canvas for the right tree will be appended here by D3.js -->
             </div>
         </div>
+    </div>
 </body>
 </html>

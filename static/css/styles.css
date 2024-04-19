@@ -96,6 +96,12 @@
     grid-column: 9;
 }
 
+.tree-container {
+    width: 25%;
+    height: 800px;
+    overflow: scroll;
+}
+
 #message-text {
   width: 10%;
   max-width: 150px;
@@ -132,4 +138,18 @@
     padding: 10px;
     margin-bottom: 15px;
 }
+#tree-container {
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin: 10px;
+    position: relative; /* For positioning of potential overlays like zoom controls */
+    overflow: auto; /* Makes the div scrollable */
+    background: #f9f9f9;
+}
+
+.link {
+    stroke: #555; /* Color of the line */
+    stroke-width: 1px; /* Thickness of the line */
+}
+
 

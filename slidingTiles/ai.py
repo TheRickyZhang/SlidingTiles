@@ -45,7 +45,8 @@ def idaStar(puzzle):
     decision_tree = {
         "state": puzzle.state(),
         "move": None,
-        "children": []
+        "children": [],
+        "chosen": True
     }
 
     while True:
@@ -57,38 +58,6 @@ def idaStar(puzzle):
         elif rem == INF:
             return None, {}
         bound = rem
-
-def greedyFirstBest(puzzle):
-    if puzzle.checkWin():
-        return [], 0, puzzle
-    if not patternDbDict:
-        init(puzzle.boardSize)
-
-    t1 = perf_counter_ns()
-    openList = []
-    closedSet = set()
-    startState = State(puzzle, 0, hScore(puzzle))
-    heapq.heappush(openList, startState)
-
-    while openList:
-        curState = heapq.heappop(openList)
-        if curState.puzzle.checkWin():
-            tDelta = (perf_counter_ns() - t1) / NANO_TO_SEC
-            print("Took {} seconds to find a solution of {} moves using Greedy First-Best Search".format(tDelta, len(curState.moves)))
-            return curState.moves, tDelta, curState.puzzle
-
-        closedSet.add(curState.puzzle.hash())
-
-        for move in curState.puzzle.DIRECTIONS:
-            validMove, simPuzzle = curState.puzzle.simulateMove(move)
-            if validMove and simPuzzle.hash() not in closedSet:
-                h = hScore(simPuzzle)
-                nextState = State(simPuzzle, 0, h, curState.moves + [move])  # Set g=0 for greedy search
-                heapq.heappush(openList, nextState)
-
-    return None, 0, puzzle
-
-
 def search(path, g, bound, dirs, tree_node):
     cur = path[-1]
     f = g + hScore(cur)
@@ -96,6 +65,7 @@ def search(path, g, bound, dirs, tree_node):
     if f > bound:
         return f
     if cur.checkWin():
+        tree_node["chosen"] = True
         return True
     min = INF
 
@@ -112,13 +82,16 @@ def search(path, g, bound, dirs, tree_node):
         child_node = {
             "state": simPuzzle.state(),
             "move": _dir,
-            "children": []
+            "children": [],
+            "chosen": False
         }
         tree_node["children"].append(child_node)
 
         t = search(path, g + 1, bound, dirs, child_node)
         if t == True:
+            tree_node["chosen"] = True
             return True
+
         if t < min:
             min = t
 
@@ -130,6 +103,58 @@ def search(path, g, bound, dirs, tree_node):
         tree_node.pop("children", None)
 
     return min
+
+
+def greedyFirstBest(puzzle):
+    if puzzle.checkWin():
+        return [], 0, puzzle
+    if not patternDbDict:
+        init(puzzle.boardSize)
+
+    t1 = perf_counter_ns()
+    openList = []
+    closedSet = set()
+    startState = State(puzzle, 0, hScore(puzzle))
+    heapq.heappush(openList, startState)
+
+    decision_tree = {
+        "state": puzzle.state(),
+        "move": None,
+        "children": [],
+        "chosen": True
+    }
+    path_dict = {puzzle.hash(): decision_tree}
+
+    while openList:
+        curState = heapq.heappop(openList)
+        if curState.puzzle.checkWin():
+            tDelta = (perf_counter_ns() - t1) / NANO_TO_SEC
+            # Backtrack to label all chosen nodes
+            node = path_dict[curState.puzzle.hash()]
+            while node:
+                node["chosen"] = True
+                node = node.get("parent", None)
+            print("Took {} seconds to find a solution of {} moves using Greedy First-Best Search".format(tDelta, len(curState.moves)))
+            return curState.moves, tDelta, curState.puzzle, decision_tree
+
+        tree_node = path_dict[curState.puzzle.hash()]
+
+        for move in curState.puzzle.DIRECTIONS:
+            validMove, simPuzzle = curState.puzzle.simulateMove(move)
+
+            if validMove:
+                child_node = {"state": simPuzzle.state(), "move": move, "children": [], "chosen": False, "parent": tree_node}
+                tree_node["children"].append(child_node)
+                if simPuzzle.hash() not in closedSet:
+                    closedSet.add(simPuzzle.hash())
+                    path_dict[simPuzzle.hash()] = child_node
+                    nextState = State(simPuzzle, 0, hScore(simPuzzle), curState.moves + [move])
+                    heapq.heappush(openList, nextState)
+
+        if not tree_node["children"]:
+            tree_node.pop("children", None)
+
+    return None, 0, puzzle, decision_tree
 
 
 def hScore(puzzle):

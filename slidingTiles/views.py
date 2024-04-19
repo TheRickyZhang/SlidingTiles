@@ -85,7 +85,8 @@ def ida_solve(request):
 
         moves_str = [f"{move[0]},{move[1]}" for move in ida_moves]
 
-        return JsonResponse({'success': True, 'moves': moves_str, 'decisionTree': decision_tree, 'time': tDelta, 'numMoves': len(ida_moves)})
+        return JsonResponse({'success': True, 'moves': moves_str, 'decisionTree': decision_tree, 'time': tDelta,
+                             'numMoves': len(ida_moves)})
     except Exception as e:
         logger.error(f"Auto-solve failed: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e), 'decisionTree': []})
@@ -95,14 +96,26 @@ def greedy_solve(request):
     try:
         grid = json.loads(request.session.get('game_board'))
         game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
-        greedy_moves, tDelta, _ = ai.greedyFirstBest(game)
+        greedy_moves, tDelta, _, decision_tree = ai.greedyFirstBest(game)
 
         # Convert moves from tuples to strings
         moves_str = [f"{move[0]},{move[1]}" for move in greedy_moves]
 
-        return JsonResponse({'success': True, 'moves': moves_str, 'time': tDelta, 'numMoves': len(greedy_moves)})
+        return JsonResponse({'success': True, 'moves': moves_str, 'time': tDelta, 'numMoves': len(greedy_moves),
+                             'decisionTree': json.loads(serialize_decision_tree(decision_tree))})
     except Exception as e:
         logger.error(f"Greedy solve failed: {str(e)}")
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({'success': False, 'error': str(e), 'decisionTree': []})
+
+
+# Prevents circular linkage error by excluding parent references
+def serialize_decision_tree(tree_root):
+    def serialize(node):
+        result = {k: v for k, v in node.items() if k != 'parent'}
+        if 'children' in result:
+            result['children'] = [serialize(child) for child in result['children']]
+        return result
+
+    return json.dumps(serialize(tree_root))
 
 
