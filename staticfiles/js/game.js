@@ -28,6 +28,13 @@ $(document).ready(function() {
         if (!gameActive) return;
         startIdaSolve();
     });
+    
+    $('#both-solve-button').click(function() {
+        if (!gameActive) return;
+        startGreedySolve();
+        startIdaSolve();
+    });
+
 
     $('#greedy-solve-button').click(function() {
         if (!gameActive) return;
@@ -42,9 +49,9 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
+                    $('#greedyTimeTaken').text(response.time);  // Display tDelta
+                    $('#greedyNumMoves').text(response.numMoves);  // Display numMoves
                     animateSolution(response.moves);
-                    $('#greedyTimeTaken').text('Time taken: ' + response.time);  // Display tDelta
-                    $('#greedyNumMoves').text('Number of moves: ' + response.numMoves);  // Display numMoves
                 } else {
                     gameActive = true;
                     console.error('Greedy solve failed:', response.error);
@@ -68,8 +75,10 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
+                    $('#idaTimeTaken').text(response.time);  // Display tDelta
+                    $('#idaNumMoves').text(response.numMoves);  // Display numMoves
+                    drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
                     animateSolution(response.moves);
-                    drawDecisionTree(response.decisionTree);
                 } else {
                     gameActive = true;
                     console.error('Ida-solve failed:', response.error);
@@ -160,16 +169,17 @@ $(document).ready(function() {
 
 
     // Someone please organize this better
-    function drawDecisionTree(treeData) {
+    function drawDecisionTree(treeData, tree_container = '#left-tree-svg-container') {
         const margin = { top: 20, right: 90, bottom: 30, left: 90 };
         const width = 800;
         const height = 600;
         const depth = d3.hierarchy(treeData).height;
         const dynamicHeight = Math.max(height, depth * 100);
 
-        d3.select('#tree-container').html('');
-
-        const svg = d3.select('#tree-container').append('svg')
+        d3.select(tree_container).html('');
+        // Append SVG to a new div within the container
+        const svgContainer = d3.select(tree_container).append('div');
+        const svg = svgContainer.append('svg')
             .attr('viewBox', `0 0 ${width} ${dynamicHeight}`)
             .attr('preserveAspectRatio', "xMinYMin meet")
             .classed("svg-content", true);
@@ -207,79 +217,42 @@ $(document).ready(function() {
             .style('font-size', '10px')
             .text(d => moveDirection(d.target.data.move));
 
-        // Draw vertices
-        const nodes = mainGroup.selectAll('g.node')
-            .data(root.descendants())
-            .enter().append('g')
-            .attr('class', 'node')
-            .attr('transform', d => `translate(${d.y},${d.x})`);
+   // Draw vertices
+   const nodes = mainGroup.selectAll('g.node')
+   .data(root.descendants())
+   .enter().append('g')
+   .attr('class', 'node')
+   .attr('transform', d => `translate(${d.y},${d.x})`);
 
-        nodes.append('circle')
-         .attr('r', 10)
-         .style('fill', '#1aff00')
-         .style('stroke', '#fff')
-         .on('click', function(event, d) {
-             // Create the popup
-             const popup = mainGroup.append('g')
-                     .attr('id', 'statePopup')
-                     .style('display', 'none')
-                     .style('position', 'absolute')
-                     .style('background-color', 'white')
-                     .style('border', '1px solid gray')
-                     .style('padding', '10px');
+   nodes.append('circle')
+   .attr('r', 10)
+   .style('fill', '#1aff00')
+   .style('stroke', '#fff')
+   .on('click', function(event, d) {
+       // Remove any existing popups
+       d3.select(tree_container).select('#statePopup').remove();
 
-             const tileSize = 25;
-            const boardWidth = tileSize * d.data.state[0].length;
-            const boardHeight = tileSize * d.data.state.length;
+       // Create the popup
+       const popup = mainGroup.append('g')
+               .attr('id', 'statePopup')
+               .style('display', 'none')
+               .style('position', 'absolute')
+               .style('background-color', 'white')
+               .style('border', '1px solid gray')
+               .style('padding', '10px');
 
-            popup.append('rect') // Background rectangle
-                .attr('width', boardWidth)
-                .attr('height', boardHeight)
-                .attr('fill', 'lightgray');
+       // ... existing code ...
 
-            for (let row = 0; row < d.data.state.length; row++) {
-                for (let col = 0; col < d.data.state[0].length; col++) {
-                    let tileContent = d.data.state[row][col] === 0 ? '' : d.data.state[row][col];
+       // Position the popup
+       const [clickX, clickY] = d3.pointer(event);
+       popup.attr('transform', `translate(${clickX + 10}, ${clickY + 10})`);
 
-                    popup.append('rect')
-                        .attr('x', col * tileSize)
-                        .attr('y', row * tileSize)
-                        .attr('width', tileSize)
-                        .attr('height', tileSize)
-                        .attr('fill', 'white')
-                        .attr('stroke', 'black');
+       popup.style('display', 'block'); // Show the popup
 
-                    popup.append('text')
-                        .attr('x', col * tileSize + tileSize/2 )
-                        .attr('y', row * tileSize + tileSize/2 )
-                        .attr('text-anchor', 'middle')
-                        .attr('dominant-baseline', 'central')
-                        .text(tileContent);
-                }
-            }
-
-            // FIX for quality of life
-             // This code doesn't work and I'm not going to find out why. (popup always at first node)
-             // Also boards are stacking for reason, even when I try to delete them
-             // const svgElement = d3.select(this.parentNode.parentNode).node();
-             // const [clickX, clickY] = d3.pointer(event, svgElement);
-             // const mainGroupTransform = d3.select('g').attr('transform');
-             // const transformValues = mainGroupTransform.substring(10, mainGroupTransform.length - 1).split(',');
-             // const translateX = +transformValues[0];
-             // const translateY = +transformValues[1];
-             // popup.attr('transform', `translate(${clickX + translateX + 10}, ${clickY + translateY + 10})`);
-
-             popup.style('display', 'block'); // Show the popup
-
-             // Click to hide the popup
-             popup.on('click', function() {
-                popup.style('display', 'none');
-             });
-         });
-
-        svg.select('svg').call(d3.zoom().on('zoom', event => {
-                mainGroup.attr('transform', event.transform);
-            }))
-            .call(d3.zoom().translateTo, margin.left, margin.top);
-    }
+       // Click to hide the popup
+       popup.on('click', function() {
+          popup.style('display', 'none');
+       });
+   });
+}
 });
