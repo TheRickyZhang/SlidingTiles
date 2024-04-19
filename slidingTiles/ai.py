@@ -53,7 +53,7 @@ def idaStar(puzzle):
         if rem == True:
             tDelta = (perf_counter_ns()-t1)/NANO_TO_SEC
             print("Took {} seconds to find a solution of {} moves".format(tDelta, len(dirs)))
-            return dirs, decision_tree  # Return the decision tree root node
+            return dirs, decision_tree, tDelta  # Return the decision tree root node
         elif rem == INF:
             return None, {}
         bound = rem
