@@ -31,6 +31,16 @@ $(document).ready(function() {
     
     $('#both-solve-button').click(function() {
         if (!gameActive) return;
+        /* Can duplicate the board for just this function, but I think it will be easier to have
+        two boards to begin with. That will involve:
+
+        1. Adding html element to support second board
+        2. Modifying /start/, initializeGame, and updateBoard to handle both boards. Ensure most actions are
+        applied to both boards to keep them in sync.
+        3. Make each button solve their respective grid. After finishing, other grid should sync. Solving both follows trivially.
+        4. Update checks such as gameActive to ensure no unexpected behavior
+
+        */
         startGreedySolve();
         startIdaSolve();
     });
@@ -44,13 +54,14 @@ $(document).ready(function() {
     function startGreedySolve() {
         gameActive = false;
         $.ajax({
-            url: '/greedy_solve/',  // Make sure this URL matches the one in your Django urls.py
+            url: '/greedy_solve/',
             type: 'GET',
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
-                    $('#greedyTimeTaken').text(response.time);  // Display tDelta
-                    $('#greedyNumMoves').text(response.numMoves);  // Display numMoves
+                    $('#greedyTimeTaken').text(response.time);
+                    $('#greedyNumMoves').text(response.numMoves);
+                    drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
                     animateSolution(response.moves);
                 } else {
                     gameActive = true;
@@ -168,8 +179,8 @@ $(document).ready(function() {
     }
 
 
-    // Someone please organize this better
-    function drawDecisionTree(treeData, tree_container = '#left-tree-svg-container') {
+    // Someone please organize this better if possible
+    function drawDecisionTree(treeData, tree_container) {
         const margin = { top: 20, right: 90, bottom: 30, left: 90 };
         const width = 800;
         const height = 600;
@@ -177,8 +188,8 @@ $(document).ready(function() {
         const dynamicHeight = Math.max(height, depth * 100);
 
         d3.select(tree_container).html('');
-        // Append SVG to a new div within the container
-        const svgContainer = d3.select(tree_container).append('div');
+        const svgContainer = d3.select(tree_container).append('div').style('position', 'relative');
+
         const svg = svgContainer.append('svg')
             .attr('viewBox', `0 0 ${width} ${dynamicHeight}`)
             .attr('preserveAspectRatio', "xMinYMin meet")
@@ -193,9 +204,9 @@ $(document).ready(function() {
         const mainGroup = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
 
+        // Adjust spacing of tree here (node, space)
         const root = d3.hierarchy(treeData);
-        const treeLayout = d3.tree()
-            .nodeSize([30, 40]);
+        const treeLayout = d3.tree().nodeSize([30, 40]);
         treeLayout(root);
 
         // Draw edges
@@ -217,42 +228,38 @@ $(document).ready(function() {
             .style('font-size', '10px')
             .text(d => moveDirection(d.target.data.move));
 
-   // Draw vertices
-   const nodes = mainGroup.selectAll('g.node')
-   .data(root.descendants())
-   .enter().append('g')
-   .attr('class', 'node')
-   .attr('transform', d => `translate(${d.y},${d.x})`);
+       // Draw vertices
+       const nodes = mainGroup.selectAll('g.node')
+       .data(root.descendants())
+       .enter().append('g')
+       .attr('class', 'node')
+       .attr('transform', d => `translate(${d.y},${d.x})`);
 
-   nodes.append('circle')
-   .attr('r', 10)
-   .style('fill', '#1aff00')
-   .style('stroke', '#fff')
-   .on('click', function(event, d) {
-       // Remove any existing popups
-       d3.select(tree_container).select('#statePopup').remove();
-
-       // Create the popup
-       const popup = mainGroup.append('g')
-               .attr('id', 'statePopup')
-               .style('display', 'none')
-               .style('position', 'absolute')
-               .style('background-color', 'white')
-               .style('border', '1px solid gray')
-               .style('padding', '10px');
-
-       // ... existing code ...
-
-       // Position the popup
-       const [clickX, clickY] = d3.pointer(event);
-       popup.attr('transform', `translate(${clickX + 10}, ${clickY + 10})`);
-
-       popup.style('display', 'block'); // Show the popup
-
-       // Click to hide the popup
-       popup.on('click', function() {
-          popup.style('display', 'none');
-       });
-   });
-}
+       nodes.append('circle')
+        .attr('r', 10)
+        .style('fill', d => d.data.chosen ? '#1aff00' : '#ff1a1a')
+        .style('stroke', '#fff')
+           // Show board state when node clicked
+        .on('click', function(event, d) {
+            event.stopPropagation();
+            svgContainer.selectAll('.popup').remove();
+            const [x, y] = d3.pointer(event, svgContainer.node());
+            const popup = svgContainer.append('div')
+                .attr('class', 'popup')
+                .style('position', 'absolute')
+                .style('left', `${x}px`)
+                .style('top', `${y}px`)
+                .style('background-color', 'white')
+                .style('border', 'solid 1px black')
+                .style('padding', '10px')
+                .style('color', 'black')
+                .style('min-width', '50px')
+                .style('min-height', '50px')
+                .style('z-index', '1000') // Make sure the popup is on top
+                .text(`State: \n${JSON.stringify(d.data.state)}`)
+                .on('click', function(e) {
+                    e.stopPropagation();
+                });
+        });
+    }
 });
