@@ -9,6 +9,55 @@
     <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'js/game.js' %}"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<<<<<<< Updated upstream
+=======
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Full height of the viewport */
+        }
+
+        #game-and-tree-container {
+            display: flex;
+            flex-grow: 1; /* Takes up all available space */
+            position: relative;
+        }
+
+        .side-container {
+            flex: 1; /* Each side container takes up half the width */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-board1, #game-board2 {
+            margin: 20px auto;
+            width: 100%; /* Adjustable width */
+            height: 406px; /* Adjustable height */
+            border: 1px solid #ccc; /* Visual boundary for game boards */
+        }
+
+        .tree-container {
+            width: 100%; /* Full width of the parent container */
+            overflow: auto;
+            height: 600px; /* Adjusted height accounting for game board and padding */
+            border: 2px solid #ccc;
+            margin-top: 20px; /* Space from the board */
+        }
+
+        h2, div {
+            text-align: center; /* Centering text */
+        }
+    </style>
+>>>>>>> Stashed changes
 </head>
 
 <body data-rows="{{ rows }}" data-cols="{{ cols }}">
@@ -28,12 +77,73 @@
         <button id="move-right" class="make-move-button" data-direction="2">Right</button>
         <button id="auto-solve-button" class="control-button">Auto-solve</button>
 
+<<<<<<< Updated upstream
         <div></div>
         <button id="move-down" class="make-move-button" data-direction="0">Down</button>
         <div></div>
         
         <button id="solve-idaStar*" class="solve-button" >Solve IDA*</button>
 
+=======
+    <!-- Main container -->
+    <div id="main-container">
+        <!-- Game and tree container -->
+        <div id="game-and-tree-container">
+            <!-- Left side container -->
+            <div class="side-container">
+                <div>
+                    <h2>Greedy Solve</h2>
+                    <div id="game-board1"></div>
+                    <div>
+                        <span>Time taken: </span>
+                        <span id="greedyTimeTaken"></span>
+                    </div>
+                    <div>
+                        <span>Number of moves: </span>
+                        <span id="greedyNumMoves"></span>
+                    </div>
+                </div>
+                <div class="tree-container">
+                    <div id="left-tree-svg-container">
+                        <!-- The SVG canvas for the left tree will be appended here by D3.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side container -->
+            <div class="side-container">
+                <div>
+                    <h2>IDA* Solve</h2>
+                    <div id="game-board2"></div>
+                    <div>
+                        <span>Time taken: </span>
+                        <span id="idaTimeTaken"></span>
+                    </div>
+                    <div>
+                        <span>Number of moves: </span>
+                        <span id="idaNumMoves"></span>
+                    </div>
+                </div>
+                <div class="tree-container">
+                    <div id="right-tree-svg-container">
+                        <!-- The SVG canvas for the right tree will be appended here by D3.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Button container -->
+        <div id="button-container">
+            <button id="move-up" class="make-move-button" data-direction="-1,0">Up</button>
+            <button id="move-left" class="make-move-button" data-direction="0,-1">Left</button>
+            <button id="move-right" class="make-move-button" data-direction="0,1">Right</button>
+            <button id="move-down" class="make-move-button" data-direction="1,0">Down</button>
+            <button id="new-game-button" class="control-button">New Game</button>
+            <button id="both-solve-button" class="solve-button">Solve both</button>
+            <button id="greedy-solve-button" class="solve-button">Greedy-Solve*</button>
+            <button id="IDA-solve-button" class="solve-button">IDA-solve</button>
+        </div>
+>>>>>>> Stashed changes
     </div>
     
     <div id="message-text" style="display: none;"> </div>
