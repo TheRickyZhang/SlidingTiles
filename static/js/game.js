@@ -4,13 +4,16 @@ $(document).ready(function() {
     let gameActive = true;
     let gameBoard1 = $('#game-board1'); // First game board
     let gameBoard2 = $('#game-board2'); // Second game board
+    let board1 = []; // First game board array
+    let board2 = []; // Second game board array
 
 
     initializeGame(rows, cols);
 
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
-        makeMove(direction);
+        makeMove(direction, false, gameBoard1);
+        makeMove(direction, false, gameBoard2);
     });
 
     $('#new-game-button').click(function() {
@@ -24,7 +27,8 @@ $(document).ready(function() {
         let direction = directionMap[e.key];
         console.log('Direction:', direction);
         if (direction !== undefined) {
-            makeMove(direction); // Make move on gameBoard1
+            makeMove(direction, false, gameBoard1);
+            makeMove(direction, false, gameBoard2);
         }
     });
 
@@ -80,7 +84,7 @@ $(document).ready(function() {
             }
         });
     }
-
+    
 
     function startIdaSolve() {
         gameActive = false;
@@ -108,9 +112,10 @@ $(document).ready(function() {
         });
     }
 
+
     function animateSolution(moves, isGreedy = false) {
         let currentMove = 0;
-
+    
         function performNextMove() {
             if (currentMove < moves.length) {
                 const move = moves[currentMove];
@@ -119,19 +124,20 @@ $(document).ready(function() {
                 setTimeout(performNextMove, 250);
             }
         }
-
+    
         performNextMove();
     }
     function initializeGame(rows, cols) {
         $.getJSON('/start/', { 'rows': rows, 'cols': cols }, function(data) {
-            updateBoard(data.board); // Initialize gameBoard1
-            updateBoard(data.board, true); // Initialize gameBoard2
+            board1 = data.board; // Initialize board1 array
+            board2 = JSON.parse(JSON.stringify(data.board)); // Initialize board2 array with a deep copy of the data
+            updateBoard(board1, gameBoard1); // Update gameBoard1
+            updateBoard(board2, gameBoard2); // Update gameBoard2
             gameBoard1.css('display', 'grid');
             gameBoard2.css('display', 'grid');
         });
     }
-
-    function makeMove(direction, bypass = false, isGreedy = false) {
+    function makeMove(direction, bypass = false, boardToUpdate) {
         if (!gameActive && !bypass) return;
     
         const directionToButtonId = {
@@ -146,8 +152,7 @@ $(document).ready(function() {
         $.getJSON('/move/', { 'direction': direction }, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, false); // Update gameBoard1
-                updateBoard(data.board, true); // Update gameBoard2
+                updateBoard(data.board, boardToUpdate); // Update the specified game board
     
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
     
@@ -160,13 +165,9 @@ $(document).ready(function() {
             }
         });
     }
-    
-
-    function updateBoard(board, isGreedy = false) {
-        let boardDiv1 = gameBoard1; // Use the first game board
-        let boardDiv2 = gameBoard2; // Use the second game board
-        updateSingleBoard(board, boardDiv1);
-        updateSingleBoard(board, boardDiv2);
+    function updateBoard(board, gameBoard) {
+        let boardDiv = gameBoard; // Use the specified game board
+        updateSingleBoard(board, boardDiv);
     }
     function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
@@ -181,7 +182,7 @@ $(document).ready(function() {
         });
     }
 
-     function moveDirection(move) {
+    function moveDirection(move) {
         const directionMap = {
             '1,0': 'D',
             '-1,0': 'U',
