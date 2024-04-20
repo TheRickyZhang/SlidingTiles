@@ -10,7 +10,7 @@ $(document).ready(function() {
 
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
-        makeMove(direction);
+        makeMove(direction, false, true, true);
     });
 
     $('#new-game-button').click(function() {
@@ -24,7 +24,7 @@ $(document).ready(function() {
         let direction = directionMap[e.key];
         console.log('Direction:', direction);
         if (direction !== undefined) {
-            makeMove(direction); // Make move on gameBoard1
+            makeMove(direction, false, true, true); // Make move on gameBoard1
         }
     });
 
@@ -66,7 +66,7 @@ $(document).ready(function() {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
-                    animateSolution(response.moves, true);
+                    animateSolution(response.moves, true, false);
                 } else {
                     gameActive = true;
                     console.error('Greedy solve failed:', response.error);
@@ -93,7 +93,7 @@ $(document).ready(function() {
                     $('#idaTimeTaken').text(response.time);  // Display tDelta
                     $('#idaNumMoves').text(response.numMoves);  // Display numMoves
                     drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
-                    animateSolution(response.moves);
+                    animateSolution(response.moves, false, true);
                 } else {
                     gameActive = true;
                     console.error('Ida-solve failed:', response.error);
@@ -108,13 +108,13 @@ $(document).ready(function() {
         });
     }
 
-    function animateSolution(moves, isGreedy = false) {
+    function animateSolution(moves, isGreedy = false, isIDA = false) {
         let currentMove = 0;
 
         function performNextMove() {
             if (currentMove < moves.length) {
                 const move = moves[currentMove];
-                makeMove(move, true, isGreedy);
+                makeMove(move, true, isGreedy, isIDA);
                 currentMove++;
                 setTimeout(performNextMove, 250);
             }
@@ -131,25 +131,26 @@ $(document).ready(function() {
         });
     }
 
-    function makeMove(direction, bypass = false, isGreedy = false) {
+    function makeMove(direction, bypass = false, isGreedy = false, isIDA = false) {
         if (!gameActive && !bypass) return;
-
+    
         const directionToButtonId = {
             '1,0': "#move-down",
             '-1,0': "#move-up",
             '0,1': "#move-right",
             '0,-1': "#move-left"
         };
-
+    
         let $button = $(directionToButtonId[direction]);
-
-        $.getJSON('/move/', { 'direction': direction }, function(data) {
+    
+        $.getJSON('/move/', { 'direction': direction, 'isIDA': isIDA, 'isGreedy': isGreedy}, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, isGreedy);
-
+                updateBoard(data.board, false); // Update gameBoard1
+                updateBoard(data.board, true); // Update gameBoard2
+    
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
-
+    
                 if (data.solved) {
                     $("#message-text").text("Puzzle solved!").css("background-color", "#00ff00").show();
                     gameActive = false;
@@ -159,9 +160,15 @@ $(document).ready(function() {
             }
         });
     }
+    
 
     function updateBoard(board, isGreedy = false) {
-        let boardDiv = isGreedy ? gameBoard2 : gameBoard1; // Use the correct game board
+        let boardDiv1 = gameBoard1; // Use the first game board
+        let boardDiv2 = gameBoard2; // Use the second game board
+        updateSingleBoard(board, boardDiv1);
+        updateSingleBoard(board, boardDiv2);
+    }
+    function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
             'display': 'grid',
             'grid-template-columns': `repeat(${board[0].length}, 100px)`
@@ -191,7 +198,7 @@ $(document).ready(function() {
         const width = 800;
         const height = 600;
         const depth = d3.hierarchy(treeData).height;
-        const dynamicHeight = Math.max(height, depth * 100);
+        const dynamicHeight = height;    // dynamic height not needed
 
         d3.select(tree_container).html('');
         const svgContainer = d3.select(tree_container).append('div').style('position', 'relative');
@@ -245,27 +252,52 @@ $(document).ready(function() {
         .attr('r', 10)
         .style('fill', d => d.data.chosen ? '#1aff00' : '#ff1a1a')
         .style('stroke', '#fff')
-           // Show board state when node clicked
         .on('click', function(event, d) {
             event.stopPropagation();
             svgContainer.selectAll('.popup').remove();
             const [x, y] = d3.pointer(event, svgContainer.node());
-            const popup = svgContainer.append('div')
+
+            const board = d.data.state; // assuming this is a 2D array representing the board
+            const tileSize = 20; // Size of each tile in the board grid
+            const boardWidth = board[0].length * tileSize;
+            const boardHeight = board.length * tileSize;
+
+            // Append an SVG element for the board
+            const popup = svgContainer.append('svg')
                 .attr('class', 'popup')
                 .style('position', 'absolute')
                 .style('left', `${x}px`)
                 .style('top', `${y}px`)
+                .attr('width', boardWidth + 10)
+                .attr('height', boardHeight)
                 .style('background-color', 'white')
                 .style('border', 'solid 1px black')
                 .style('padding', '10px')
-                .style('color', 'black')
-                .style('min-width', '50px')
-                .style('min-height', '50px')
-                .style('z-index', '1000') // Make sure the popup is on top
-                .text(`State: \n${JSON.stringify(d.data.state)}`)
-                .on('click', function(e) {
-                    e.stopPropagation();
+
+            // Draw each tile as a rectangle
+            board.forEach((row, rowIndex) => {
+                row.forEach((tile, colIndex) => {
+                    popup.append('rect')
+                        .attr('x', colIndex * tileSize)
+                        .attr('y', rowIndex * tileSize)
+                        .attr('width', tileSize)
+                        .attr('height', tileSize)
+                        .style('fill', tile === 0 ? '#fff' : '#ccc')
+                        .style('stroke', '#000');
+
+                    if (tile !== 0) {
+                        popup.append('text')
+                            .attr('x', colIndex * tileSize + tileSize / 2)
+                            .attr('y', rowIndex * tileSize + tileSize / 2)
+                            .attr('text-anchor', 'middle')
+                            .attr('dy', '0.35em') // vertical alignment
+                            .text(tile);
+                    }
                 });
+            });
+            popup.on('click', function() {
+                svgContainer.selectAll('.popup').remove();
+            });
         });
     }
 });

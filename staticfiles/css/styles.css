@@ -55,16 +55,22 @@
     align-items: center;
     transition: background-color 0.5s ease;
 }
-
 #button-container {
+    position: absolute; /* Absolute positioning */
+    top: 100px; /* Positioned at the bottom */
+    left: 50%; /* Centered horizontally */
+    transform: translateX(-50%); /* Offset by half its width to center align */
+    width: auto; /* Let it take the width according to its content */
+    z-index: 10; /* Ensure it's above other elements */
     display: grid;
-    grid-template-rows: auto auto auto;
-    grid-template-columns: auto auto auto;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+    grid-template-columns: repeat(3, auto); /* Creates a 3-column layout */
+    grid-template-rows: repeat(5, auto); /* Creates a 3-row layout */
+    justify-items: center; /* Centers the grid horizontally */
+    justify-content: center; /* Centers the grid horizontally */
+    align-items: center; /* Centers the grid vertically */
+    gap: 5px; /* Spacing between buttons */
+    padding: 10px; /* Padding around the container */
 }
-
 
 #move-up {
     grid-row: 1;

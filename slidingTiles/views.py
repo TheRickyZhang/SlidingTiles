@@ -41,7 +41,9 @@ def start_game(request):
     game.shuffle()
 
     request.session['game_board'] = json.dumps(game.board)
-    return JsonResponse({'board': game.board})
+    request.session['game_board_greedy'] = json.dumps(game.board) # Creates a second board for greedy
+
+    return JsonResponse({'board': game.board, 'board_greedy': game.board})
 
 def make_move(request):
     direction_map = {
@@ -54,17 +56,25 @@ def make_move(request):
         'LEFT':LEFT,
         'RIGHT':RIGHT
     }
+    isIDA = request.GET.get('isIDA', False)
+    isGreedy = request.GET.get('isGreedy', False)
     direction_tuple = direction_map.get(request.GET.get('direction', 0), 0)
     #direction_tuple = direction_map.get(request.GET.get('direction', 'down'), DOWN)
     grid = json.loads(request.session.get('game_board'))
+    grid_2 = json.loads(request.session.get('game_board_greedy'))
 
     game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
-
-    if not game.move(direction_tuple):
-        return JsonResponse({'success': False, 'error': 'Move not possible'})
+    game_2 = slidingGrid(boardSize=4, shuffle=False, grid_=grid_2)
+    if isIDA:
+        if not game.move(direction_tuple):
+            return JsonResponse({'success': False, 'error': 'Move not possible'})
+    if isGreedy:
+        if not game_2.move(direction_tuple):
+            return JsonResponse({'success': False, 'error': 'Move not possible'})
 
     request.session['game_board'] = json.dumps(game.board)
-    return JsonResponse({'success': True, 'board': game.board, 'solved': game.checkWin()})
+    request.session['game_board_greedy'] = json.dumps(game_2.board)
+    return JsonResponse({'success': True, 'board': game.board, 'solved': game.checkWin(), 'board_greedy': game_2.board, 'solved_greedy': game_2.checkWin()})
 
 
 def solve_puzzle(request):

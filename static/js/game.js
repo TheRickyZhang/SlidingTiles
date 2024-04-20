@@ -10,7 +10,7 @@ $(document).ready(function() {
 
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
-        makeMove(direction);
+        makeMove(direction, false, true, true);
     });
 
     $('#new-game-button').click(function() {
@@ -24,7 +24,7 @@ $(document).ready(function() {
         let direction = directionMap[e.key];
         console.log('Direction:', direction);
         if (direction !== undefined) {
-            makeMove(direction); // Make move on gameBoard1
+            makeMove(direction, false, true, true); // Make move on gameBoard1
         }
     });
 
@@ -66,7 +66,7 @@ $(document).ready(function() {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
-                    animateSolution(response.moves, true);
+                    animateSolution(response.moves, true, false);
                 } else {
                     gameActive = true;
                     console.error('Greedy solve failed:', response.error);
@@ -93,7 +93,7 @@ $(document).ready(function() {
                     $('#idaTimeTaken').text(response.time);  // Display tDelta
                     $('#idaNumMoves').text(response.numMoves);  // Display numMoves
                     drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
-                    animateSolution(response.moves);
+                    animateSolution(response.moves, false, true);
                 } else {
                     gameActive = true;
                     console.error('Ida-solve failed:', response.error);
@@ -108,13 +108,13 @@ $(document).ready(function() {
         });
     }
 
-    function animateSolution(moves, isGreedy = false) {
+    function animateSolution(moves, isGreedy = false, isIDA = false) {
         let currentMove = 0;
 
         function performNextMove() {
             if (currentMove < moves.length) {
                 const move = moves[currentMove];
-                makeMove(move, true, isGreedy);
+                makeMove(move, true, isGreedy, isIDA);
                 currentMove++;
                 setTimeout(performNextMove, 250);
             }
@@ -124,14 +124,15 @@ $(document).ready(function() {
     }
     function initializeGame(rows, cols) {
         $.getJSON('/start/', { 'rows': rows, 'cols': cols }, function(data) {
-            updateBoard(data.board); // Initialize gameBoard1
-            updateBoard(data.board, true); // Initialize gameBoard2
+            makeMove('0,1', true, false, true); // Make a move to initialize gameBoard2
+            updateBoard(data.board, false, true); // Initialize gameBoard1
+            updateBoard(data.board_greedy, true, false); // Initialize gameBoard2
             gameBoard1.css('display', 'grid');
             gameBoard2.css('display', 'grid');
         });
     }
 
-    function makeMove(direction, bypass = false, isGreedy = false) {
+    function makeMove(direction, bypass = false, isGreedy = false, isIDA = false) {
         if (!gameActive && !bypass) return;
     
         const directionToButtonId = {
@@ -143,11 +144,11 @@ $(document).ready(function() {
     
         let $button = $(directionToButtonId[direction]);
     
-        $.getJSON('/move/', { 'direction': direction }, function(data) {
+        $.getJSON('/move/', { 'direction': direction, 'isIDA': isIDA, 'isGreedy': isGreedy}, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, false); // Update gameBoard1
-                updateBoard(data.board, true); // Update gameBoard2
+                updateBoard(data.board, false, true); // Update gameBoard1
+                updateBoard(data.board_greedy, true); // Update gameBoard2
     
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
     
@@ -162,11 +163,13 @@ $(document).ready(function() {
     }
     
 
-    function updateBoard(board, isGreedy = false) {
-        let boardDiv1 = gameBoard1; // Use the first game board
-        let boardDiv2 = gameBoard2; // Use the second game board
-        updateSingleBoard(board, boardDiv1);
-        updateSingleBoard(board, boardDiv2);
+    function updateBoard(board, isGreedy = false, isIDA = false) {
+        if (isGreedy){
+            updateSingleBoard(board, gameBoard1);
+        }
+        if(isIDA){
+            updateSingleBoard(board, gameBoard2);
+        }
     }
     function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
