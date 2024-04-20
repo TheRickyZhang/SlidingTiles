@@ -198,7 +198,7 @@ $(document).ready(function() {
         const width = 800;
         const height = 600;
         const depth = d3.hierarchy(treeData).height;
-        const dynamicHeight = Math.max(height, depth * 100);
+        const dynamicHeight = height;    // dynamic height not needed
 
         d3.select(tree_container).html('');
         const svgContainer = d3.select(tree_container).append('div').style('position', 'relative');
@@ -252,27 +252,52 @@ $(document).ready(function() {
         .attr('r', 10)
         .style('fill', d => d.data.chosen ? '#1aff00' : '#ff1a1a')
         .style('stroke', '#fff')
-           // Show board state when node clicked
         .on('click', function(event, d) {
             event.stopPropagation();
             svgContainer.selectAll('.popup').remove();
             const [x, y] = d3.pointer(event, svgContainer.node());
-            const popup = svgContainer.append('div')
+
+            const board = d.data.state; // assuming this is a 2D array representing the board
+            const tileSize = 20; // Size of each tile in the board grid
+            const boardWidth = board[0].length * tileSize;
+            const boardHeight = board.length * tileSize;
+
+            // Append an SVG element for the board
+            const popup = svgContainer.append('svg')
                 .attr('class', 'popup')
                 .style('position', 'absolute')
                 .style('left', `${x}px`)
                 .style('top', `${y}px`)
+                .attr('width', boardWidth + 10)
+                .attr('height', boardHeight)
                 .style('background-color', 'white')
                 .style('border', 'solid 1px black')
                 .style('padding', '10px')
-                .style('color', 'black')
-                .style('min-width', '50px')
-                .style('min-height', '50px')
-                .style('z-index', '1000') // Make sure the popup is on top
-                .text(`State: \n${JSON.stringify(d.data.state)}`)
-                .on('click', function(e) {
-                    e.stopPropagation();
+
+            // Draw each tile as a rectangle
+            board.forEach((row, rowIndex) => {
+                row.forEach((tile, colIndex) => {
+                    popup.append('rect')
+                        .attr('x', colIndex * tileSize)
+                        .attr('y', rowIndex * tileSize)
+                        .attr('width', tileSize)
+                        .attr('height', tileSize)
+                        .style('fill', tile === 0 ? '#fff' : '#ccc')
+                        .style('stroke', '#000');
+
+                    if (tile !== 0) {
+                        popup.append('text')
+                            .attr('x', colIndex * tileSize + tileSize / 2)
+                            .attr('y', rowIndex * tileSize + tileSize / 2)
+                            .attr('text-anchor', 'middle')
+                            .attr('dy', '0.35em') // vertical alignment
+                            .text(tile);
+                    }
                 });
+            });
+            popup.on('click', function() {
+                svgContainer.selectAll('.popup').remove();
+            });
         });
     }
 });
