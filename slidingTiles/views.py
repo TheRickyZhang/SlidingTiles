@@ -35,15 +35,15 @@ def landing_view(request):
 
 # Expects: {rows, cols}
 def start_game(request):
-    #rows = int(request.GET.get('rows', 4))
-    #cols = int(request.GET.get('cols', 4))
     game = slidingGrid(boardSize=4, shuffle=True, grid_=None)
     game.shuffle()
 
-    request.session['game_board'] = json.dumps(game.board)
+    # Store the initial board state for both the IDA* and Greedy algorithms
+    request.session['game_board_ida'] = json.dumps(game.board)
+    request.session['game_board_greedy'] = json.dumps(game.board)
     return JsonResponse({'board': game.board})
 
-def make_move(request):
+def make_move(request, algorithm):
     direction_map = {
         '-1,0': DOWN,
         '1,0': UP,
@@ -55,21 +55,23 @@ def make_move(request):
         'RIGHT':RIGHT
     }
     direction_tuple = direction_map.get(request.GET.get('direction', 0), 0)
-    #direction_tuple = direction_map.get(request.GET.get('direction', 'down'), DOWN)
-    grid = json.loads(request.session.get('game_board'))
+
+    # Load the appropriate board based on the algorithm
+    grid = json.loads(request.session.get(f'game_board_{algorithm}'))
 
     game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
 
     if not game.move(direction_tuple):
         return JsonResponse({'success': False, 'error': 'Move not possible'})
 
-    request.session['game_board'] = json.dumps(game.board)
+    # Update the appropriate board in the session
+    request.session[f'game_board_{algorithm}'] = json.dumps(game.board)
     return JsonResponse({'success': True, 'board': game.board, 'solved': game.checkWin()})
 
-
-def solve_puzzle(request):
+def solve_puzzle(request, algorithm):
     try:
-        grid = json.loads(request.session.get('game_board'))
+        # Load the appropriate board based on the algorithm
+        grid = json.loads(request.session.get(f'game_board_{algorithm}'))
         idaStar_moves = ai.idaStar(grid)
 
         return JsonResponse({'success': True, 'moves': idaStar_moves})
@@ -79,7 +81,8 @@ def solve_puzzle(request):
 
 def ida_solve(request):
     try:
-        grid = json.loads(request.session.get('game_board'))
+        # Load the IDA* board
+        grid = json.loads(request.session.get('game_board_ida'))
         game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
         ida_moves, decision_tree, tDelta = ai.idaStar(game)
 
@@ -91,10 +94,10 @@ def ida_solve(request):
         logger.error(f"Auto-solve failed: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e), 'decisionTree': []})
 
-
 def greedy_solve(request):
     try:
-        grid = json.loads(request.session.get('game_board'))
+        # Load the Greedy board
+        grid = json.loads(request.session.get('game_board_greedy'))
         game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
         greedy_moves, tDelta, _, decision_tree = ai.greedyFirstBest(game)
 
@@ -106,7 +109,6 @@ def greedy_solve(request):
     except Exception as e:
         logger.error(f"Greedy solve failed: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e), 'decisionTree': []})
-
 
 # Prevents circular linkage error by excluding parent references
 def serialize_decision_tree(tree_root):

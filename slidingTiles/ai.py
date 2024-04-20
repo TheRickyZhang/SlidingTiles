@@ -1,8 +1,6 @@
-#import model
-# import NPuzzleSolvers
-import pickle
-import heapq
+from heapq import heappop, heappush
 from time import perf_counter_ns
+import pickle
 
 NANO_TO_SEC = 1000000000
 INF = 100000
@@ -58,6 +56,7 @@ def idaStar(puzzle):
         elif rem == INF:
             return None, {}
         bound = rem
+
 def search(path, g, bound, dirs, tree_node):
     cur = path[-1]
     f = g + hScore(cur)
@@ -104,7 +103,6 @@ def search(path, g, bound, dirs, tree_node):
 
     return min
 
-
 def greedyFirstBest(puzzle):
     if puzzle.checkWin():
         return [], 0, puzzle
@@ -115,7 +113,7 @@ def greedyFirstBest(puzzle):
     openList = []
     closedSet = set()
     startState = State(puzzle, 0, hScore(puzzle))
-    heapq.heappush(openList, startState)
+    heappush(openList, startState)
 
     decision_tree = {
         "state": puzzle.state(),
@@ -126,7 +124,7 @@ def greedyFirstBest(puzzle):
     path_dict = {puzzle.hash(): decision_tree}
 
     while openList:
-        curState = heapq.heappop(openList)
+        curState = heappop(openList)
         if curState.puzzle.checkWin():
             tDelta = (perf_counter_ns() - t1) / NANO_TO_SEC
             # Backtrack to label all chosen nodes
@@ -149,7 +147,7 @@ def greedyFirstBest(puzzle):
                     closedSet.add(simPuzzle.hash())
                     path_dict[simPuzzle.hash()] = child_node
                     nextState = State(simPuzzle, 0, hScore(simPuzzle), curState.moves + [move])
-                    heapq.heappush(openList, nextState)
+                    heappush(openList, nextState)
 
         if not tree_node["children"]:
             tree_node.pop("children", None)
