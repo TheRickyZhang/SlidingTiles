@@ -11,7 +11,6 @@ $(document).ready(function() {
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
         makeMove(direction);
-        makeMove(direction, false, true);
     });
 
     $('#new-game-button').click(function() {
@@ -26,7 +25,6 @@ $(document).ready(function() {
         console.log('Direction:', direction);
         if (direction !== undefined) {
             makeMove(direction); // Make move on gameBoard1
-            makeMove(direction, false, true); // Make move on gameBoard2
         }
     });
 

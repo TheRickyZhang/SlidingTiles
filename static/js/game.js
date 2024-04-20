@@ -11,7 +11,6 @@ $(document).ready(function() {
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
         makeMove(direction);
-        makeMove(direction, false, true);
     });
 
     $('#new-game-button').click(function() {
@@ -26,7 +25,6 @@ $(document).ready(function() {
         console.log('Direction:', direction);
         if (direction !== undefined) {
             makeMove(direction); // Make move on gameBoard1
-            makeMove(direction, false, true); // Make move on gameBoard2
         }
     });
 
@@ -135,23 +133,24 @@ $(document).ready(function() {
 
     function makeMove(direction, bypass = false, isGreedy = false) {
         if (!gameActive && !bypass) return;
-
+    
         const directionToButtonId = {
             '1,0': "#move-down",
             '-1,0': "#move-up",
             '0,1': "#move-right",
             '0,-1': "#move-left"
         };
-
+    
         let $button = $(directionToButtonId[direction]);
-
+    
         $.getJSON('/move/', { 'direction': direction }, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, isGreedy);
-
+                updateBoard(data.board, false); // Update gameBoard1
+                updateBoard(data.board, true); // Update gameBoard2
+    
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
-
+    
                 if (data.solved) {
                     $("#message-text").text("Puzzle solved!").css("background-color", "#00ff00").show();
                     gameActive = false;
@@ -161,9 +160,15 @@ $(document).ready(function() {
             }
         });
     }
+    
 
     function updateBoard(board, isGreedy = false) {
-        let boardDiv = isGreedy ? gameBoard2 : gameBoard1; // Use the correct game board
+        let boardDiv1 = gameBoard1; // Use the first game board
+        let boardDiv2 = gameBoard2; // Use the second game board
+        updateSingleBoard(board, boardDiv1);
+        updateSingleBoard(board, boardDiv2);
+    }
+    function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
             'display': 'grid',
             'grid-template-columns': `repeat(${board[0].length}, 100px)`
