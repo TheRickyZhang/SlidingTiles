@@ -41,7 +41,7 @@ def start_game(request):
     game.shuffle()
 
     request.session['game_board'] = json.dumps(game.board)
-    request.session['game_board_greedy'] = json.dumps(game.board) # Creates a second board for greedy
+    request.session['game_board_greedy'] = json.dumps(game.board)
 
     return JsonResponse({'board': game.board, 'board_greedy': game.board})
 

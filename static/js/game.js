@@ -134,28 +134,27 @@ $(document).ready(function() {
 
     function makeMove(direction, bypass = false, isGreedy = false, isIDA = false) {
         if (!gameActive && !bypass) return;
-    
+
         const directionToButtonId = {
             '1,0': "#move-down",
             '-1,0': "#move-up",
             '0,1': "#move-right",
             '0,-1': "#move-left"
         };
-    
-        let $button = $(directionToButtonId[direction]);
-    
+
         $.getJSON('/move/', { 'direction': direction, 'isIDA': isIDA, 'isGreedy': isGreedy}, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, false, true); // Update gameBoard1
-                updateBoard(data.board_greedy, true); // Update gameBoard2
-    
+                updateBoard(data.board, data.board_greedy, isGreedy, isIDA); // Pass both board states
+
+                const $button = $(directionToButtonId[direction]);
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
-    
-                if (data.solved) {
+
+                if(data.solved || data.solved_greedy) {
                     $("#message-text").text("Puzzle solved!").css("background-color", "#00ff00").show();
                     gameActive = false;
                 }
+
             } else {
                 $("#message-text").text("Move not possible").css("background-color", "#ff0000").show();
             }
@@ -163,14 +162,15 @@ $(document).ready(function() {
     }
     
 
-    function updateBoard(board, isGreedy = false, isIDA = false) {
-        if (isGreedy){
-            updateSingleBoard(board, gameBoard1);
+    function updateBoard(board1, board2, isGreedy = false, isIDA = false) {
+        if (isGreedy) {
+            updateSingleBoard(board1, gameBoard1);
         }
-        if(isIDA){
-            updateSingleBoard(board, gameBoard2);
+        if (isIDA) {
+            updateSingleBoard(board2, gameBoard2);
         }
     }
+
     function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
             'display': 'grid',
@@ -183,7 +183,6 @@ $(document).ready(function() {
             });
         });
     }
-
      function moveDirection(move) {
         const directionMap = {
             '1,0': 'D',
