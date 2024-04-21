@@ -35,18 +35,7 @@ $(document).ready(function() {
     
     $('#both-solve-button').click(function() {
         if (!gameActive) return;
-        /* Can duplicate the board for just this function, but I think it will be easier to have
-        two boards to begin with. That will involve:
-
-        1. Adding html element to support second board
-        2. Modifying /start/, initializeGame, and updateBoard to handle both boards. Ensure most actions are
-        applied to both boards to keep them in sync.
-        3. Make each button solve their respective grid. After finishing, other grid should sync. Solving both follows trivially.
-        4. Update checks such as gameActive to ensure no unexpected behavior
-
-        */
-        startGreedySolve();
-        startIdaSolve();
+        startSolvingWithDelay();
     });
 
 
@@ -55,56 +44,68 @@ $(document).ready(function() {
         startGreedySolve();
     });
 
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function startSolvingWithDelay() {
+        let greedyStarted = startGreedySolve(); // Start greedy solution
+        let idaStarted = startIdaSolve(); // Start IDA solution
+
+        // We now have two promises: greedyStarted and idaStarted
+        // We need to perform actions in these promises that respect a certain delay between them
+        Promise.all([greedyStarted, idaStarted]).then(() => {
+            console.log("Both solving methods have started.");
+        }).catch(error => {
+            console.error('Error during simultaneous solving:', error);
+        });
+    }
+
     function startGreedySolve() {
-        gameActive = false;
-        $.ajax({
-            url: '/greedy_solve/',
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
+        return new Promise((resolve, reject) => {
+            gameActive = false;
+            $.ajax({
+                url: '/greedy_solve/',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
                     animateSolution(response.moves, true, false);
-                } else {
+                    resolve();
+                },
+                error: function(xhr, status, error) {
                     gameActive = true;
-                    console.error('Greedy solve failed:', response.error);
-                    alert('Greedy solve failed: ' + response.error);
+                    console.error('AJAX error during greedy solve:', error);
+                    reject(error);
                 }
-            },
-            error: function(xhr, status, error) {
-                gameActive = true;
-                console.error('AJAX error during greedy solve:', error);
-                alert('AJAX error during greedy solve: ' + error);
-            }
+            });
         });
     }
 
-
     function startIdaSolve() {
-        gameActive = false;
-        $.ajax({
-            url: '/ida_solve/',
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    $('#idaTimeTaken').text(response.time);  // Display tDelta
-                    $('#idaNumMoves').text(response.numMoves);  // Display numMoves
-                    drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
-                    animateSolution(response.moves, false, true);
-                } else {
-                    gameActive = true;
-                    console.error('Ida-solve failed:', response.error);
-                    alert('Ida-solve failed: ' + response.error);
-                }
-            },
-            error: function(xhr, status, error) {
-                gameActive = true;
-                console.error('AJAX error during auto-solve:', error);
-                alert('AJAX error during auto-solve: ' + error);
-            }
+        return new Promise((resolve, reject) => {
+            gameActive = false;
+            delay(500).then(() => { // Ensure there's a 500ms delay before starting IDA solve
+                $.ajax({
+                    url: '/ida_solve/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        $('#idaTimeTaken').text(response.time);
+                        $('#idaNumMoves').text(response.numMoves);
+                        drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
+                        animateSolution(response.moves, false, true);
+                        resolve();
+                    },
+                    error: function(xhr, status, error) {
+                        gameActive = true;
+                        console.error('AJAX error during IDA solve:', error);
+                        reject(error);
+                    }
+                });
+            });
         });
     }
 
@@ -144,8 +145,8 @@ $(document).ready(function() {
         $.getJSON('/move/', { 'direction': direction, 'isGreedy': isGreedy, 'isIDA': isIDA}, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateSingleBoard(data.board, gameBoard1);
-                updateSingleBoard(data.board_greedy, gameBoard2);
+                updateSingleBoard(data.board, gameBoard2);
+                updateSingleBoard(data.board_greedy, gameBoard1);
 
                 const $button = $(directionToButtonId[direction]);
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
