@@ -87,7 +87,7 @@ $(document).ready(function() {
     function startIdaSolve() {
         return new Promise((resolve, reject) => {
             gameActive = false;
-            delay(500).then(() => { // Ensure there's a 500ms delay before starting IDA solve
+            delay(125).then(() => { // Ensure there's a 500ms delay before starting IDA solve
                 $.ajax({
                     url: '/ida_solve/',
                     type: 'GET',
