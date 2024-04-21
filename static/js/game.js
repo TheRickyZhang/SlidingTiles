@@ -124,9 +124,8 @@ $(document).ready(function() {
     }
     function initializeGame(rows, cols) {
         $.getJSON('/start/', { 'rows': rows, 'cols': cols }, function(data) {
-            makeMove('0,1', true, false, true); // Make a move to initialize gameBoard2
-            updateBoard(data.board, false, true); // Initialize gameBoard1
-            updateBoard(data.board_greedy, true, false); // Initialize gameBoard2
+            updateSingleBoard(data.board, gameBoard1);
+            updateSingleBoard(data.board_greedy, gameBoard2);
             gameBoard1.css('display', 'grid');
             gameBoard2.css('display', 'grid');
         });
@@ -142,10 +141,11 @@ $(document).ready(function() {
             '0,-1': "#move-left"
         };
 
-        $.getJSON('/move/', { 'direction': direction, 'isIDA': isIDA, 'isGreedy': isGreedy}, function(data) {
+        $.getJSON('/move/', { 'direction': direction, 'isGreedy': isGreedy, 'isIDA': isIDA}, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, data.board_greedy, isGreedy, isIDA); // Pass both board states
+                updateSingleBoard(data.board, gameBoard1);
+                updateSingleBoard(data.board_greedy, gameBoard2);
 
                 const $button = $(directionToButtonId[direction]);
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
@@ -162,14 +162,14 @@ $(document).ready(function() {
     }
     
 
-    function updateBoard(board1, board2, isGreedy = false, isIDA = false) {
-        if (isGreedy) {
-            updateSingleBoard(board1, gameBoard1);
-        }
-        if (isIDA) {
-            updateSingleBoard(board2, gameBoard2);
-        }
-    }
+    // function updateBoard(board1, board2, isGreedy = false, isIDA = false) {
+    //     if (isGreedy) {
+    //         updateSingleBoard(board1, gameBoard1);
+    //     }
+    //     if (isIDA) {
+    //         updateSingleBoard(board2, gameBoard2);
+    //     }
+    // }
 
     function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({

@@ -56,19 +56,18 @@ def make_move(request):
         'LEFT':LEFT,
         'RIGHT':RIGHT
     }
-    isIDA = request.GET.get('isIDA', False)
-    isGreedy = request.GET.get('isGreedy', False)
+    isIDA = request.GET.get('isIDA', "")
+    isGreedy = request.GET.get('isGreedy', "")
     direction_tuple = direction_map.get(request.GET.get('direction', 0), 0)
-    #direction_tuple = direction_map.get(request.GET.get('direction', 'down'), DOWN)
     grid = json.loads(request.session.get('game_board'))
     grid_2 = json.loads(request.session.get('game_board_greedy'))
 
     game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
     game_2 = slidingGrid(boardSize=4, shuffle=False, grid_=grid_2)
-    if isIDA:
+    if isIDA.lower() == 'true':
         if not game.move(direction_tuple):
             return JsonResponse({'success': False, 'error': 'Move not possible'})
-    if isGreedy:
+    if isGreedy.lower() == 'true':
         if not game_2.move(direction_tuple):
             return JsonResponse({'success': False, 'error': 'Move not possible'})
 

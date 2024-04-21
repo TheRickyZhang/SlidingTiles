@@ -86,7 +86,7 @@
 }
 
 /* Styling for all buttons */
-.make-move-button, .solve-button, .control-button {
+.make-move-button, .solve-button, .control-button, message-container{
     padding: 10px;
     font-size: 16px;
     cursor: pointer;
@@ -153,6 +153,8 @@
 }
 
 #message-text {
+    grid-row: 6 / 7;
+    grid-column: 1 / 4;
   width: 10%;
   max-width: 150px;
   min-height: 20px;
