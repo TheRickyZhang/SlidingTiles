@@ -16,6 +16,7 @@
             padding: 0;
             height: 100%;
             width: 100%;
+            font-family: Arial, sans-serif; /* Change font family to Arial */
         }
 
         #main-container {
@@ -113,16 +114,17 @@
 
         <!-- Button container -->
         <div id="button-container">
+            <button id="new-game-button" class="control-button">New Game</button>
             <button id="move-up" class="make-move-button" data-direction="-1,0">Up</button>
             <button id="move-left" class="make-move-button" data-direction="0,-1">Left</button>
             <button id="move-right" class="make-move-button" data-direction="0,1">Right</button>
             <button id="move-down" class="make-move-button" data-direction="1,0">Down</button>
-            <button id="new-game-button" class="control-button">New Game</button>
+            <button id="greedy-solve-button" class="solve-button">Greedy-Solve</button>
+            <button id="IDA-solve-button" class="solve-button">IDA*-solve</button>
             <button id="both-solve-button" class="solve-button">Solve both</button>
-            <button id="greedy-solve-button" class="solve-button">Greedy-Solve*</button>
-            <button id="IDA-solve-button" class="solve-button">IDA-solve</button>
             <div id="message-text" class="message-container"></div>
         </div>
+
     </div>
 </body>
 </html>

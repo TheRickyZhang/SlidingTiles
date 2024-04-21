@@ -6,8 +6,28 @@
     <meta charset="UTF-8">
     <title>Sliding Puzzle Solver</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex; /* Use flexbox layout */
+            justify-content: center; /* Center the items horizontally */
+            align-items: center; /* Center the items vertically */
+            flex-direction: column; /* Align items in a column */
+        }
+
+        #gridSize {
+            margin-bottom: 10px; /* Optional: Add space below the dropdown */
+        }
+
+    </style>
 </head>
 <body>
+    <h1>Sliding Puzzle Solver</h1>
+    <h2>By Ricky Zhang, Albert Li, and Abbhinav Sriram</h2>
+
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -25,7 +45,7 @@
             <option value="4" selected>4 x 4</option>
         </select>
 
-        <button type="submit">Start Game</button>
+        <button type="submit" class="new-game-button">Start Game</button>
     </form>
 </body>
 </html>
