@@ -1,105 +1,131 @@
-.tile {
-    width: 100px;
-    height: 100px;
-    background-color: #e4e4e4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    border: 1px solid #ccc;
-}
-
 .back-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
     display: inline-block;
-    padding: 10px 15px;
+    padding: 12px 24px;
     font-size: 16px;
-    cursor: pointer;
-    background-color: #f2f2f2;
-    color: #333;
-    border: 1px solid #ccc;
+    font-weight: bold;
+    text-transform: uppercase;
     border-radius: 5px;
-    margin: 10px;
-    text-align: center;
+    cursor: pointer;
     transition: background-color 0.3s ease;
+    border: 1px solid #79bae4;
+    background-color: #91b2cd;
 }
 
 .back-button:hover {
     background-color: #e0e0e0;
 }
 
+#main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding-top: 30px;
+}
 
-.make-move-button {
-    display: block;
-    width: 70px;
-    height: 70px;
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-
-    background-color: #f7f7f7;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: background-color 0.5s ease;
-
-    /*display: flex;*/
+button {
+    display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 16px;
+    transition: background-color 0.5s ease;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
+
+button:hover {
+    background-color: #00dc79;
+}
+
+
+.make-move-button {
+    width: 70px;
+    height: 70px;
+    background-color: #f7f7f7;
+}
+
 
 .control-button {
     width: 145px;
-    padding: 10px;
-    font-size: 15px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.5s ease;
+    background-color: #19e7c5;
 }
 
 .solve-button {
-    width: 130px;
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.5s ease;
+    font-size: 20px;
+    width: 100px;
+    background-color: #ffffff;
+    border: 1px solid #698ba1;
 }
 
-#button-container {
-    position: absolute; /* Absolute positioning */
-    top: 100px; /* Positioned at the bottom */
-    left: 50%; /* Centered horizontally */
-    transform: translateX(-50%); /* Offset by half its width to center align */
-    width: auto; /* Let it take the width according to its content */
-    z-index: 10; /* Ensure it's above other elements */
+#shuffle-container {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+#header-container {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+}
+
+#toggle-tree-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: auto;
+}
+
+
+#button-container-1 {
+    position: absolute;
+    top: 125px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    z-index: 10;
     display: grid;
-    grid-template-columns: repeat(3, auto); /* Creates a 3-column layout */
-    grid-template-rows: repeat(5, auto); /* Creates a 3-row layout */
-    justify-items: center; /* Centers the grid horizontally */
-    justify-content: center; /* Centers the grid horizontally */
-    align-items: center; /* Centers the grid vertically */
-    gap: 5px; /* Spacing between buttons */
-    padding: 10px; /* Padding around the container */
-}
-
-/* Styling for all buttons */
-.make-move-button, .solve-button, .control-button {
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
+    grid-template-columns: auto;
+    justify-items: center;
     align-items: center;
-    transition: background-color 0.5s ease;
+    gap: 5px;
+    border: 1px solid #ccc;
+    padding: 5px;
 }
 
-/* Positioning individual buttons in the grid */
+#button-container-2 {
+    position: absolute;
+    top: 380px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: auto;
+    justify-items: center;
+    align-items: center;
+    column-gap: 25px;
+    row-gap: 0;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
 #new-game-button {
-    grid-row: 1 / 2;
-    grid-column: 2 / 3;
+    border: 1px solid #59c4bb;
+    border-radius: 5px;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 #move-up {
@@ -137,34 +163,57 @@
     grid-column: 3 / 4;
 }
 
-/* Additional style adjustments if needed */
 .make-move-button {
     width: 70px;
     height: 70px;
     background-color: #f7f7f7;
-    border: 1px solid #ccc;
+    border: 1px solid #79bae4;
     border-radius: 5px;
 }
 
 #message-text {
-  width: 10%;
-  max-width: 150px;
+    grid-row: 6 / 7;
+    grid-column: 1 / 4;
+  width: 300px;
+  max-width: 300px;
   min-height: 20px;
   margin: 20px auto;
+  padding: 5px;
   text-align: center;
-  padding: 10px;
   background-color: #6bd2fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   font-family: Arial, sans-serif;
 }
 
-#game-board {
-    display: none;
-    grid-gap: 5px;
+
+.game-board {
+    margin: 20px auto;
+    width: 100%;
+    height: 406px;
+    border: 1px solid #0d2ec3;
+    display: grid;
+    grid-template-columns: repeat(4, 100px);
+}
+
+.tile {
+    width: 100px;
+    height: 100px;
+    background-color:#9dd8ed;
+    display: flex;
     justify-content: center;
     align-items: center;
-    margin: 20px auto;
+    font-size: 2em;
+    border: 1px solid #fff1f1;
+}
+
+.tile img {
+    width: 100%;
+    height: 100%;
+}
+
+.tile:hover {
+    transform: translateY(-5px);
 }
 
 .messages {
@@ -183,3 +232,47 @@
     margin-bottom: 15px;
 }
 
+.tree-container {
+    width: 100%;
+    overflow: auto;
+    height: 600px;
+    border: 2px solid #ccc;
+    margin-top: 20px;
+}
+
+.link {
+    stroke: #555;
+    stroke-width: 1px;
+}
+
+#game-and-tree-container {
+    display: flex;
+    flex-grow: 1;
+    position: relative;
+}
+
+.side-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#shuffleSlider {
+    width: 100px;
+    margin: 10px;
+}
+
+#shuffleValue {
+    font-size: 18px;
+    margin-left: 5px;
+    color: #333;
+}
+
+#shuffleButton {
+    display: inline-flex;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    margin-left: 10px;
+}

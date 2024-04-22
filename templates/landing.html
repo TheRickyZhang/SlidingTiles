@@ -6,9 +6,40 @@
     <meta charset="UTF-8">
     <title>Sliding Puzzle Solver</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex; /* Use flexbox layout */
+            justify-content: center; /* Center the items horizontally */
+            align-items: center; /* Center the items vertically */
+            flex-direction: column; /* Align items in a column */
+        }
+
+        #gridSize {
+            margin-bottom: 10px; /* Optional: Add space below the dropdown */
+        }
+        h1, h2, p {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 30px;
+            max-width: 600px; /* Set a maximum width */
+            margin: auto;
+        }
+
+
+    </style>
 </head>
 <body>
-    {# Try to redirect all major errors back here with this message #}
+    <h1>COP3530: Sliding Puzzle Solver</h1>
+    <h2>By Ricky Zhang, Albert Li, and Abbhinav Sriram</h2>
+    <p>
+        Welcome to Sliding Puzzle Solver! This is our final project for COP3530: Data Structures and Algorithms. 
+        This project is a web-based application that allows users to compares the abilities of IDA* and Greedy Best-First Search algorithms when solving a 4x4 sliding puzzle.
+    </p>
+
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -20,13 +51,8 @@
     {% endif %}
 
     <form action="{% url 'game' %}" method="get">
-        <label for="rows">Number of Rows (2-12):</label>
-        <input type="number" id="rows" name="rows" min="4" max="4" required>
 
-        <label for="columns">Number of Columns (2-12):</label>
-        <input type="number" id="columns" name="columns" min="4" max="4" required>
-
-        <button type="submit">Start Game</button>
+        <button type="submit" class="new-game-button">Start Game</button>
     </form>
 </body>
 </html>

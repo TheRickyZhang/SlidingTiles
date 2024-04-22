@@ -2,21 +2,13 @@ $(document).ready(function() {
     let rows = $('body').data('rows');
     let cols = $('body').data('cols');
     let gameActive = true;
-    let gameBoard1 = $('#game-board1'); // Left game board
-    let gameBoard2 = $('#game-board2'); // Right game board
+    let gameBoard1 = $('#game-board1'); // First game board
+    let gameBoard2 = $('#game-board2'); // Second game board
     let numShuffles = $('#shuffleSlider').val();
 
-    let showTrees = false;
 
     initializeGame(rows, cols, numShuffles);
-
     // Event listeners
-    $('#toggle-tree-button').click(function() {
-        showTrees = !showTrees;
-        console.log(showTrees);
-        $("#message-text").text("Show trees: " + showTrees).css("background-color", "#64f78b").show();
-    });
-
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
         makeMove(direction, false, true, true); // updates both boards
@@ -55,11 +47,9 @@ $(document).ready(function() {
         let direction = directionMap[e.key];
         console.log('Direction:', direction);
         if (direction !== undefined) {
-            e.preventDefault();
             makeMove(direction, false, true, true); // Make move on both boards
         }
     });
-
     // runs when user presses the IDA* solve button
     $('#IDA-solve-button').click(function() {
         if (!gameActive) {
@@ -96,7 +86,7 @@ $(document).ready(function() {
     }
 
 
-    // solves the board using both the greedy and IDA* algorithms sequentially
+    // solves the board using both the greedy and IDA* algorithms
     function solveBoth() {
         gameActive = false;
         startGreedySolve(function() {
@@ -118,9 +108,7 @@ $(document).ready(function() {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     // draws the tree on the left container
-                    if(showTrees){
-                        drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
-                    }
+                    drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
                     // animates the solution on the greedy board
                     animateSolution(response.moves, true, false, callback);
                     if (!response.board_solved || !response.board_greedy_solved) {
@@ -147,9 +135,7 @@ $(document).ready(function() {
                 $('#idaTimeTaken').text(response.time);
                 $('#idaNumMoves').text(response.numMoves);
                 // draws tree on the right side
-                if(showTrees){
-                    drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
-                }
+                drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
                 // animates the solution on the IDA* board
                 animateSolution(response.moves, false, true);
                 if (!response.board_solved || !response.board_greedy_solved) {
@@ -176,7 +162,7 @@ $(document).ready(function() {
                 currentMove++;
                 // sets a timeout for performing the next move so that the browser can 
                 // update the UI/check for input before the next move
-                setTimeout(performNextMove, 400);
+                setTimeout(performNextMove, 200);
             } else {
                 if (typeof callback === 'function') {
                     callback();
@@ -320,8 +306,8 @@ $(document).ready(function() {
             svgContainer.selectAll('.popup').remove();
             const [x, y] = d3.pointer(event, svgContainer.node());
 
-            const board = d.data.state;
-            const tileSize = 20;
+            const board = d.data.state; // assuming this is a 2D array representing the board
+            const tileSize = 20; // Size of each tile in the board grid
             const boardWidth = board[0].length * tileSize;
             const boardHeight = board.length * tileSize;
 
@@ -337,7 +323,7 @@ $(document).ready(function() {
                 .style('border', 'solid 1px black')
                 .style('padding', '10px')
 
-            // Draw each tile
+            // Draw each tile as a rectangle
             board.forEach((row, rowIndex) => {
                 row.forEach((tile, colIndex) => {
                     popup.append('rect')
