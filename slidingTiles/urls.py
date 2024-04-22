@@ -23,7 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.landing_view, name='landing'),
     path('game/', views.game_view, name='game'),
-    path('solve/', views.solve_puzzle, name='solve_puzzle'),
     path('start/', views.start_game, name='start_game'),
     path('shuffle/', views.shuffle, name='shuffle'),
     path('move/', views.make_move, name='make_move'),

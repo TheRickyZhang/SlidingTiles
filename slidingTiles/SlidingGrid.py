@@ -1,7 +1,7 @@
 from random import choice
 from copy import deepcopy
 
-#slidingGrid is the data structure for our grid
+#slidingGrid is the data structure representing our grid
 class slidingGrid:
     # (y,x) directions
     UP = (1, 0)
@@ -25,29 +25,32 @@ class slidingGrid:
             self.blankPos = self.find_blank()
         if shuffle:
             self.shuffle(shuffle)
-
+    # finds the blank spot on the grid, returning its coordinates
     def find_blank(self):
         for i in range(self.rows):
             for j in range(self.cols):
                 if self.board[i][j] == 0:
                     return i, j
 
+    # returns the string representation of the grid
     def __str__(self):
         outStr = ''
         for i in self.board:
             outStr += '\t'.join(map(str, i))
             outStr += '\n'
         return outStr
-
+    
+    # gets an item from the grid given a key
     def __getitem__(self, key):
         return self.board[key]
 
+    # shuffles the grid by making random moves numShuffles times
     def shuffle(self, numShuffles):
         for i in range(numShuffles):
             dir = choice(self.DIRECTIONS)
             self.move(dir)
 
-
+    # moves the blank spot in the direction specified by dir
     def move(self, dir):
         if isinstance(dir, int):
             raise ValueError("dir must be a tuple or list with at least two elements")
@@ -62,17 +65,20 @@ class slidingGrid:
         self.blankPos = newBlankPos
         return True
 
+    # calls move for each given move in the moveList
     def moveSolve(self, moveList):
         for i in range(len(moveList)):
             self.move(moveList[i])
 
+    # checks if the grid has been solved
     def checkWin(self):
         for i in range(self.boardSize):
             for j in range(self.boardSize):
                 if self.board[i][j] != i * self.boardSize + j + 1 and self.board[i][j] != 0:
                     return False
         return True
-
+    
+    # provides a hash for the state of the board, which can then be used to look up info in patternDB
     def hash(self, group={}):
         if not group:
             group = {s for s in range(self.boardSize ** 2)}
@@ -89,6 +95,7 @@ class slidingGrid:
                     hashString[2 * self[i][j] + 1] = 'x'
 
         return ''.join(hashString).replace('x', '')
+
 
     def simulateMove(self, dir):
         simPuzzle = deepcopy(self)

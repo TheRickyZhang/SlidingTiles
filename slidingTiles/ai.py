@@ -156,6 +156,7 @@ def greedyFirstBest(puzzle):
     return None, 0, puzzle, decision_tree
 
 # Calculates the heuristic value for a given puzzle state, used by the search algorithms to estimate the distance to the goal state.
+# The heuristic uses the precomputed pattern database to determine minimum number of moves. If a pattern is not found in the database, it uses the manhattan distance.
 def hScore(puzzle):
     h = 0
     for g in range(len(groups)):

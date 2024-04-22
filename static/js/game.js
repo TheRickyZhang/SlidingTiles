@@ -6,36 +6,44 @@ $(document).ready(function() {
     let gameBoard2 = $('#game-board2'); // Second game board
     let numShuffles = $('#shuffleSlider').val();
 
+    let showTrees = false;
 
     initializeGame(rows, cols, numShuffles);
+    // Event listeners
 
+    $('#toggle-tree-button').click(function() {
+        showTrees = !showTrees;
+        console.log(showTrees);
+        $("#message-text").text("Show trees: " + showTrees).css("background-color", "#64f78b").show();
+    });
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
-        makeMove(direction, false, true, true);
+        makeMove(direction, false, true, true); // updates both boards
     });
 
     $('#new-game-button').click(function() {
         gameActive = true;
-        initializeGame(rows, cols, numShuffles);
+        initializeGame(rows, cols, numShuffles); // restarts the game
     });
 
 
     $('#shuffleSlider').on('input', function() {
         $('#shuffleValue').text(this.value);
-        numShuffles = $('#shuffleSlider').val();
+        numShuffles = $('#shuffleSlider').val(); // adjusts the number of shuffles
     });
 
     $('#shuffleButton').click(function() {
-        if (!gameActive) {
+        if (!gameActive) { // prevents shuffling when the game is already solved
             $("#message-text").text("Already solved. Start new game.").css("background-color", "#f6e51b").show();
             return;
         }
         $.getJSON('/shuffle/', { 'rows': rows, 'cols': cols, 'shuffles': numShuffles }, function(data) {
-            updateSingleBoard(data.board, gameBoard1);
-            updateSingleBoard(data.board_greedy, gameBoard2);
+            updateSingleBoard(data.board, gameBoard1); // updates IDA* board
+            updateSingleBoard(data.board_greedy, gameBoard2); // updates greedy board
         });
     });
 
+    // runs when user presses keys, checks if keys are arrows. If so, makes corresponding move
     $(document).keydown(function(e) {
         console.log(gameActive);
         if (!gameActive) {
@@ -46,10 +54,10 @@ $(document).ready(function() {
         let direction = directionMap[e.key];
         console.log('Direction:', direction);
         if (direction !== undefined) {
-            makeMove(direction, false, true, true); // Make move on gameBoard1
+            makeMove(direction, false, true, true); // Make move on both boards
         }
     });
-
+    // runs when user presses the IDA* solve button
     $('#IDA-solve-button').click(function() {
         if (!gameActive) {
             $("#message-text").text("Already solved. Start new game.").css("background-color", "#f6e51b").show();
@@ -59,6 +67,7 @@ $(document).ready(function() {
         startIdaSolve();
     });
     
+    // runs when user presses the both solve button
     $('#both-solve-button').click(function() {
         if (!gameActive) {
             $("#message-text").text("Already solved. Start new game.").css("background-color", "#f6e51b").show();
@@ -68,7 +77,7 @@ $(document).ready(function() {
         $("#message-text").text("Animations currently running.").css("background-color", "#00d6ff").show();
     });
 
-
+    // runs when user presses the greedy solve button
     $('#greedy-solve-button').click(function() {
         if (!gameActive) {
             $("#message-text").text("Already solved. Start new game.").css("background-color", "#f6e51b").show();
@@ -78,10 +87,13 @@ $(document).ready(function() {
         $("#message-text").text("Animations currently running.").css("background-color", "#00d6ff").show();
     });
 
+    // delays the execution of the IDA* algorithm until the greedy algorithm is finished to avoid compromising calculations
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+
+    // solves the board using both the greedy and IDA* algorithms
     function solveBoth() {
         gameActive = false;
         startGreedySolve(function() {
@@ -90,15 +102,23 @@ $(document).ready(function() {
         $("#message-text").text("Animations currently running.").css("background-color", "#00d6ff").show();
     }
 
+    // starts the greedy algorithm
     function startGreedySolve(callback = null) {
+        // makes a call to views.py to run the greedy algorithm
         $.ajax({
                 url: '/greedy_solve/',
                 type: 'GET',
                 dataType: 'json',
+                // runs if the call is successful
                 success: function(response) {
+                    // updates the time taken and number of moves taken by the greedy algorithm
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
-                    drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
+                    // draws the tree on the left container
+                    if(showTrees){
+                        drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
+                    }
+                    // animates the solution on the greedy board
                     animateSolution(response.moves, true, false, callback);
                     if (!response.board_solved || !response.board_greedy_solved) {
                         gameActive = true;
@@ -114,14 +134,20 @@ $(document).ready(function() {
     }
 
     function startIdaSolve() {
+        // makes a call to views.py to run the IDA* algorithm
         $.ajax({
             url: '/ida_solve/',
             type: 'GET',
             dataType: 'json',
+            // runs if the call is successful
             success: function(response) {
                 $('#idaTimeTaken').text(response.time);
                 $('#idaNumMoves').text(response.numMoves);
-                drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
+                // draws tree on the right side
+                if(showTrees){
+                    drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
+                }
+                // animates the solution on the IDA* board
                 animateSolution(response.moves, false, true);
                 if (!response.board_solved || !response.board_greedy_solved) {
                     gameActive = true;
@@ -135,15 +161,19 @@ $(document).ready(function() {
         });
     }
 
+    // animates the given moves on the board
     function animateSolution(moves, isGreedy = false, isIDA = false, callback = 0) {
         let currentMove = 0;
-
+        // we used a closure function instead of a while loop to accommodate JavaScript's single threaded structure
+        // this allows the animations to run smoothly
         function performNextMove() {
             if (currentMove < moves.length) {
                 const move = moves[currentMove];
                 makeMove(move, true, isGreedy, isIDA);
                 currentMove++;
-                setTimeout(performNextMove, 200);
+                // sets a timeout for performing the next move so that the browser can 
+                // update the UI/check for input before the next move
+                setTimeout(performNextMove, 400);
             } else {
                 if (typeof callback === 'function') {
                     callback();
@@ -153,6 +183,7 @@ $(document).ready(function() {
 
         performNextMove();
     }
+    // starts the game with the given number of rows, columns, and shuffles 
     function initializeGame(rows, cols, shuffles) {
         $.getJSON('/start/', { 'rows': rows, 'cols': cols, 'shuffles': shuffles }, function(data) {
             updateSingleBoard(data.board, gameBoard1);
@@ -162,6 +193,7 @@ $(document).ready(function() {
         });
     }
 
+    // makes a move on the specified boards
     function makeMove(direction, bypass = false, isGreedy = false, isIDA = false) {
         if (!gameActive && !bypass) return;
 
@@ -172,8 +204,10 @@ $(document).ready(function() {
             '0,-1': "#move-left"
         };
 
+        // makes a call to views.py to move the tiles
         $.getJSON('/move/', { 'direction': direction, 'isGreedy': isGreedy, 'isIDA': isIDA}, function(data) {
             if (data.success) {
+                // updates the data on the front end
                 $("#message-text").hide().empty();
                 updateSingleBoard(data.board, gameBoard2);
                 updateSingleBoard(data.board_greedy, gameBoard1);
@@ -191,7 +225,7 @@ $(document).ready(function() {
             }
         });
     }
-
+    // updates a given board with the given data
     function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
             'display': 'grid',
@@ -215,13 +249,15 @@ $(document).ready(function() {
     }
 
 
-    // Someone please organize this better if possible
+    // draws the decision tree after a user clicks solve
     function drawDecisionTree(treeData, tree_container) {
+        // defining visual bounds for the tree
         const margin = { top: 20, right: 90, bottom: 30, left: 90 };
         const width = 800;
         const height = 600;
         const dynamicHeight = height;    // dynamic height not needed
 
+        // connecting to html
         d3.select(tree_container).html('');
         const svgContainer = d3.select(tree_container).append('div').style('position', 'relative');
 
@@ -274,6 +310,8 @@ $(document).ready(function() {
         .attr('r', 10)
         .style('fill', d => d.data.chosen ? '#1aff00' : '#ff1a1a')
         .style('stroke', '#fff')
+        
+        // displays the state of the board when a node is clicked
         .on('click', function(event, d) {
             event.stopPropagation();
             svgContainer.selectAll('.popup').remove();

@@ -78,7 +78,7 @@ button:hover {
     height: 50px; /* Height of the container */
 }
 
-#toggle-view-button {
+#toggle-tree-button {
     position: absolute;
     top: 10px; /* Positioned 10px from the top of the container */
     right: 10px; /* Positioned 10px from the right of the container */

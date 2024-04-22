@@ -21,12 +21,24 @@
         #gridSize {
             margin-bottom: 10px; /* Optional: Add space below the dropdown */
         }
+        h1, h2, p {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 30px;
+            max-width: 600px; /* Set a maximum width */
+            margin: auto;
+        }
+
 
     </style>
 </head>
 <body>
-    <h1>Sliding Puzzle Solver</h1>
+    <h1>COP3530: Sliding Puzzle Solver</h1>
     <h2>By Ricky Zhang, Albert Li, and Abbhinav Sriram</h2>
+    <p>
+        Welcome to Sliding Puzzle Solver! This is our final project for COP3530: Data Structures and Algorithms. 
+        This project is a web-based application that allows users to compares the abilities of IDA* and Greedy Best-First Search algorithms when solving a 4x4 sliding puzzle.
+    </p>
 
     {% if messages %}
     <div class="messages">
@@ -39,11 +51,6 @@
     {% endif %}
 
     <form action="{% url 'game' %}" method="get">
-        <label for="gridSize">Grid Size:</label>
-        <select id="gridSize" name="gridSize" required>
-            <option value="3">3 x 3</option>
-            <option value="4" selected>4 x 4</option>
-        </select>
 
         <button type="submit" class="new-game-button">Start Game</button>
     </form>
