@@ -2,10 +2,11 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.contrib.messages import get_messages
 from slidingTiles import ai
 import json
 import logging
+import os
+
 
 from slidingTiles.SlidingGrid import slidingGrid
 
@@ -37,8 +38,20 @@ def landing_view(request):
 def start_game(request):
     #rows = int(request.GET.get('rows', 4))
     #cols = int(request.GET.get('cols', 4))
-    game = slidingGrid(boardSize=4, shuffle=True, grid_=None)
-    game.shuffle()
+    numShuffles = int(request.GET.get('shuffles', 0))
+    game = slidingGrid(boardSize=4, shuffle=numShuffles, grid_=None)
+    request.session['game_board'] = json.dumps(game.board)
+    request.session['game_board_greedy'] = json.dumps(game.board)
+
+    return JsonResponse({'board': game.board, 'board_greedy': game.board})
+
+def shuffle(request):
+    #rows = int(request.GET.get('rows', 4))
+    #cols = int(request.GET.get('cols', 4))
+    numShuffles = int(request.GET.get('shuffles', 0))
+    grid = json.loads(request.session.get('game_board'))
+    grid_2 = json.loads(request.session.get('game_board_greedy'))
+    game = slidingGrid(boardSize=4, shuffle=numShuffles, grid_=grid)
 
     request.session['game_board'] = json.dumps(game.board)
     request.session['game_board_greedy'] = json.dumps(game.board)
@@ -62,8 +75,8 @@ def make_move(request):
     grid = json.loads(request.session.get('game_board'))
     grid_2 = json.loads(request.session.get('game_board_greedy'))
 
-    game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
-    game_2 = slidingGrid(boardSize=4, shuffle=False, grid_=grid_2)
+    game = slidingGrid(boardSize=4, shuffle=0, grid_=grid)
+    game_2 = slidingGrid(boardSize=4, shuffle=0, grid_=grid_2)
     if isIDA.lower() == 'true':
         if not game.move(direction_tuple):
             return JsonResponse({'success': False, 'error': 'Move not possible'})
@@ -89,7 +102,7 @@ def solve_puzzle(request):
 def ida_solve(request):
     try:
         grid = json.loads(request.session.get('game_board'))
-        game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
+        game = slidingGrid(boardSize=4, shuffle=0, grid_=grid)
         ida_moves, decision_tree, tDelta = ai.idaStar(game)
 
         moves_str = [f"{move[0]},{move[1]}" for move in ida_moves]
@@ -104,7 +117,7 @@ def ida_solve(request):
 def greedy_solve(request):
     try:
         grid = json.loads(request.session.get('game_board'))
-        game = slidingGrid(boardSize=4, shuffle=False, grid_=grid)
+        game = slidingGrid(boardSize=4, shuffle=0, grid_=grid)
         greedy_moves, tDelta, _, decision_tree = ai.greedyFirstBest(game)
 
         # Convert moves from tuples to strings
@@ -126,5 +139,3 @@ def serialize_decision_tree(tree_root):
         return result
 
     return json.dumps(serialize(tree_root))
-
-

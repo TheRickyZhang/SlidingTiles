@@ -11,7 +11,7 @@ class slidingGrid:
 
     DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
-    def __init__(self, boardSize=4, shuffle=True, grid_=None):
+    def __init__(self, boardSize=4, shuffle=0, grid_=None):
         self.boardSize = boardSize
         self.rows = boardSize
         self.cols = boardSize
@@ -21,11 +21,11 @@ class slidingGrid:
             self.board = [[i * boardSize + j + 1 for j in range(boardSize)] for i in range(boardSize)]
             self.board[boardSize - 1][boardSize - 1] = 0
             self.blankPos = (boardSize - 1, boardSize - 1)
-            if shuffle:
-                self.shuffle()
         else:
             self.board = grid_
             self.blankPos = self.find_blank()
+        if shuffle:
+            self.shuffle(shuffle)
 
     def find_blank(self):
         for i in range(self.rows):
@@ -43,10 +43,8 @@ class slidingGrid:
     def __getitem__(self, key):
         return self.board[key]
 
-    def shuffle(self):
-        nShuffles = 50
-
-        for i in range(nShuffles):
+    def shuffle(self, numShuffles):
+        for i in range(numShuffles):
             dir = choice(self.DIRECTIONS)
             self.move(dir)
 

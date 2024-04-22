@@ -1,25 +1,89 @@
+/* Global reset and base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #3e3e3e; /* Grey background color for the screen */
+    color: #6475cb; /* Blue text color for headings */
+}
+
+/* Buttons */
+.button {
+    display: inline-block;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button.primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.button.primary:hover {
+    background-color: #0056b3;
+}
+
+.button.secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.button.secondary:hover {
+    background-color: #495057;
+}
+
+/* Containers */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-gap: 20px;
+}
+
+/* Tiles */
 .tile {
-    width: 100px;
-    height: 100px;
-    background-color: #e4e4e4;
+    width: 100%;
+    padding: 20px;
+    background-color: #fff; /* White background color for tiles */
+    box-shadow: 0 2px 4px rgba(95, 150, 252, 0.705);
+    transition: transform 0.3s ease;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2em;
-    border: 1px solid #ccc;
+    text-align: center; /* Center text horizontally */
+    font-size: 1.5em; /* Enlarge text size */
 }
 
+.tile:hover {
+    transform: translateY(-5px);
+}
+
+/* Additional styling */
+/* Back button */
 .back-button {
-    display: inline-block;
-    padding: 10px 15px;
-    font-size: 16px;
-    cursor: pointer;
     background-color: #f2f2f2;
     color: #333;
     border: 1px solid #ccc;
     border-radius: 5px;
-    margin: 10px;
-    text-align: center;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
@@ -27,135 +91,37 @@
     background-color: #e0e0e0;
 }
 
-
-.make-move-button {
-    display: block;
-    width: 70px;
-    height: 70px;
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-
-    background-color: #f7f7f7;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: background-color 0.5s ease;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.control-button {
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: background-color 0.5s ease;
-}
+/* Button container */
 #button-container {
     position: absolute; /* Absolute positioning */
-    top: 100px; /* Positioned at the bottom */
     left: 50%; /* Centered horizontally */
     transform: translateX(-50%); /* Offset by half its width to center align */
-    width: auto; /* Let it take the width according to its content */
-    z-index: 10; /* Ensure it's above other elements */
-    display: grid;
-    grid-template-columns: repeat(3, auto); /* Creates a 3-column layout */
-    grid-template-rows: repeat(5, auto); /* Creates a 3-row layout */
-    justify-items: center; /* Centers the grid horizontally */
-    justify-content: center; /* Centers the grid horizontally */
-    align-items: center; /* Centers the grid vertically */
-    gap: 5px; /* Spacing between buttons */
-    padding: 10px; /* Padding around the container */
-}
-
-#move-up {
-    grid-row: 1;
-    grid-column: 5;
-}
-
-#move-down {
-    grid-row: 3;
-    grid-column: 5;
-}
-
-#new-game-button {
-    grid-row: 2;
-    grid-column: 1;
-}
-
-#move-left {
-    grid-row: 2;
-    grid-column: 4;
-}
-
-#move-right {
-    grid-row: 2;
-    grid-column: 6;
-}
-
-#auto-solve-button {
-    grid-row: 2;
-    grid-column: 9;
-}
-
-.tree-container {
-    width: 25%;
-    height: 800px;
-    overflow: scroll;
-}
-
-#message-text {
-  width: 10%;
-  max-width: 150px;
-  min-height: 20px;
-  margin: 20px auto;
-  text-align: center;
-  padding: 10px;
-  background-color: #6bd2fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
-}
-
-#game-board {
-    display: none;
-    grid-gap: 5px;
+    bottom: 20px; /* Distance from the bottom */
+    display: flex;
     justify-content: center;
     align-items: center;
-    margin: 20px auto;
+    z-index: 2; /* Ensure buttons are above game boards */
 }
 
-.messages {
-    margin-bottom: 20px;
-}
-.message {
-    padding: 10px;
-    border-radius: 5px;
-    margin: 5px 0 15px;
-}
-.error {
-    background-color: #f2dede;
-    color: #a94442;
-    border: 1px solid #ebccd1;
-    padding: 10px;
-    margin-bottom: 15px;
-}
-#tree-container {
-    border: 1px solid #ccc;
-    padding: 5px;
-    margin: 10px;
-    position: relative; /* For positioning of potential overlays like zoom controls */
-    overflow: auto; /* Makes the div scrollable */
-    background: #f9f9f9;
+/* Main container */
+#main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full height of the viewport */
 }
 
-.link {
-    stroke: #555; /* Color of the line */
-    stroke-width: 1px; /* Thickness of the line */
+/* Game and tree container */
+#game-and-tree-container {
+    flex: 1; /* Takes up all available space */
+    display: flex;
+    justify-content: space-between; /* Place the side containers at the ends */
+    position: relative;
 }
 
-
+/* Side container */
+.side-container {
+    flex: 1; /* Each side container takes up half the width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

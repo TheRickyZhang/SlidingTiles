@@ -16,54 +16,16 @@
             padding: 0;
             height: 100%;
             width: 100%;
-            font-family: Arial, sans-serif; /* Change font family to Arial */
-        }
-
-        #main-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh; /* Full height of the viewport */
-        }
-
-        #game-and-tree-container {
-            display: flex;
-            flex-grow: 1; /* Takes up all available space */
-            position: relative;
-        }
-
-        .side-container {
-            flex: 1; /* Each side container takes up half the width */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #game-board1, #game-board2 {
-            margin: 20px auto;
-            width: 100%; /* Adjustable width */
-            height: 406px; /* Adjustable height */
-            border: 1px solid #0d2ec3; /* Visual boundary for game boards */
-        }
-
-        .tree-container {
-            width: 100%; /* Full width of the parent container */
-            overflow: auto;
-            height: 600px; /* Adjusted height accounting for game board and padding */
-            border: 2px solid #ccc;
-            margin-top: 20px; /* Space from the board */
+            font-family: Arial, sans-serif;
         }
 
         h2, div {
-            text-align: center; /* Centering text */
+            text-align: center;
         }
     </style>
 </head>
 
 <body data-rows="{{ rows }}" data-cols="{{ cols }}">
-    <!-- Back button -->
-    <form action="{% url 'landing' %}" method="get">
-        <button type="submit" id="back-button" class="back-button">Back</button>
-    </form>
 
     <!-- Main container -->
     <div id="main-container">
@@ -73,7 +35,7 @@
             <div class="side-container">
                 <div>
                     <h2>Greedy Solve</h2>
-                    <div id="game-board1"></div>
+                    <div id="game-board1" class="game-board"></div>
                     <div>
                         <span>Time taken: </span>
                         <span id="greedyTimeTaken"></span>
@@ -94,7 +56,7 @@
             <div class="side-container">
                 <div>
                     <h2>IDA* Solve</h2>
-                    <div id="game-board2"></div>
+                    <div id="game-board2" class="game-board"></div>
                     <div>
                         <span>Time taken: </span>
                         <span id="idaTimeTaken"></span>
@@ -111,17 +73,34 @@
                 </div>
             </div>
         </div>
-
-        <!-- Button container -->
-        <div id="button-container">
+        
+        <div id="header-container">
+            <!-- Back button -->
+            <form action="{% url 'landing' %}" method="get">
+                <button type="submit" id="back-button" class="back-button">Back</button>
+            </form>
             <button id="new-game-button" class="control-button">New Game</button>
+            <button id="toggle-view-button">Toggle View</button>
+        </div>
+
+        <div id="shuffle-container">
+            <label for="shuffleSlider">Shuffle Amount:</label>
+            <input type="range" id="shuffleSlider" min="0" max="1000" value="100" step="1">
+            <span id="shuffleValue">100</span>
+            <button id="shuffleButton">Shuffle</button>
+        </div>
+        
+        <div id="button-container-1" class = "column-container">
             <button id="move-up" class="make-move-button" data-direction="-1,0">Up</button>
             <button id="move-left" class="make-move-button" data-direction="0,-1">Left</button>
             <button id="move-right" class="make-move-button" data-direction="0,1">Right</button>
             <button id="move-down" class="make-move-button" data-direction="1,0">Down</button>
-            <button id="greedy-solve-button" class="solve-button">Greedy-Solve</button>
-            <button id="IDA-solve-button" class="solve-button">IDA*-solve</button>
-            <button id="both-solve-button" class="solve-button">Solve both</button>
+        </div>
+        
+        <div id = "button-container-2" class = "column-container">
+            <button id="greedy-solve-button" class="solve-button">Greedy Solve</button>
+            <button id="IDA-solve-button" class="solve-button">IDA* Solve</button>
+            <button id="both-solve-button" class="solve-button">Solve Both</button>
             <div id="message-text" class="message-container"></div>
         </div>
 

@@ -35,18 +35,7 @@ $(document).ready(function() {
     
     $('#both-solve-button').click(function() {
         if (!gameActive) return;
-        /* Can duplicate the board for just this function, but I think it will be easier to have
-        two boards to begin with. That will involve:
-
-        1. Adding html element to support second board
-        2. Modifying /start/, initializeGame, and updateBoard to handle both boards. Ensure most actions are
-        applied to both boards to keep them in sync.
-        3. Make each button solve their respective grid. After finishing, other grid should sync. Solving both follows trivially.
-        4. Update checks such as gameActive to ensure no unexpected behavior
-
-        */
-        startGreedySolve();
-        startIdaSolve();
+        startSolvingWithDelay();
     });
 
 
@@ -55,56 +44,69 @@ $(document).ready(function() {
         startGreedySolve();
     });
 
-    function startGreedySolve() {
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function startSolvingWithDelay() {
         gameActive = false;
-        $.ajax({
-            url: '/greedy_solve/',
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
+        let greedyStarted = startGreedySolve(); // Start greedy solution
+        let idaStarted = startIdaSolve(); // Start IDA solution
+
+        // We now have two promises: greedyStarted and idaStarted
+        // We need to perform actions in these promises that respect a certain delay between them
+        Promise.all([greedyStarted, idaStarted]).then(() => {
+            console.log("Both solving methods have started.");
+        }).catch(error => {
+            console.error('Error during simultaneous solving:', error);
+        });
+    }
+
+    function startGreedySolve() {
+        return new Promise((resolve, reject) => {
+            gameActive = false;
+            $.ajax({
+                url: '/greedy_solve/',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
                     animateSolution(response.moves, true, false);
-                } else {
+                    resolve();
+                },
+                error: function(xhr, status, error) {
                     gameActive = true;
-                    console.error('Greedy solve failed:', response.error);
-                    alert('Greedy solve failed: ' + response.error);
+                    console.error('AJAX error during greedy solve:', error);
+                    reject(error);
                 }
-            },
-            error: function(xhr, status, error) {
-                gameActive = true;
-                console.error('AJAX error during greedy solve:', error);
-                alert('AJAX error during greedy solve: ' + error);
-            }
+            });
         });
     }
 
-
     function startIdaSolve() {
-        gameActive = false;
-        $.ajax({
-            url: '/ida_solve/',
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    $('#idaTimeTaken').text(response.time);  // Display tDelta
-                    $('#idaNumMoves').text(response.numMoves);  // Display numMoves
-                    drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
-                    animateSolution(response.moves, false, true);
-                } else {
-                    gameActive = true;
-                    console.error('Ida-solve failed:', response.error);
-                    alert('Ida-solve failed: ' + response.error);
-                }
-            },
-            error: function(xhr, status, error) {
-                gameActive = true;
-                console.error('AJAX error during auto-solve:', error);
-                alert('AJAX error during auto-solve: ' + error);
-            }
+        return new Promise((resolve, reject) => {
+            gameActive = false;
+            delay(125).then(() => { // Ensure there's a 500ms delay before starting IDA solve
+                $.ajax({
+                    url: '/ida_solve/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        $('#idaTimeTaken').text(response.time);
+                        $('#idaNumMoves').text(response.numMoves);
+                        drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
+                        animateSolution(response.moves, false, true);
+                        resolve();
+                    },
+                    error: function(xhr, status, error) {
+                        gameActive = true;
+                        console.error('AJAX error during IDA solve:', error);
+                        reject(error);
+                    }
+                });
+            });
         });
     }
 
@@ -124,8 +126,8 @@ $(document).ready(function() {
     }
     function initializeGame(rows, cols) {
         $.getJSON('/start/', { 'rows': rows, 'cols': cols }, function(data) {
-            updateBoard(data.board); // Initialize gameBoard1
-            updateBoard(data.board, true); // Initialize gameBoard2
+            updateSingleBoard(data.board, gameBoard1);
+            updateSingleBoard(data.board_greedy, gameBoard2);
             gameBoard1.css('display', 'grid');
             gameBoard2.css('display', 'grid');
         });
@@ -133,28 +135,28 @@ $(document).ready(function() {
 
     function makeMove(direction, bypass = false, isGreedy = false, isIDA = false) {
         if (!gameActive && !bypass) return;
-    
+
         const directionToButtonId = {
             '1,0': "#move-down",
             '-1,0': "#move-up",
             '0,1': "#move-right",
             '0,-1': "#move-left"
         };
-    
-        let $button = $(directionToButtonId[direction]);
-    
-        $.getJSON('/move/', { 'direction': direction, 'isIDA': isIDA, 'isGreedy': isGreedy}, function(data) {
+
+        $.getJSON('/move/', { 'direction': direction, 'isGreedy': isGreedy, 'isIDA': isIDA}, function(data) {
             if (data.success) {
                 $("#message-text").hide().empty();
-                updateBoard(data.board, false); // Update gameBoard1
-                updateBoard(data.board, true); // Update gameBoard2
-    
+                updateSingleBoard(data.board, gameBoard2);
+                updateSingleBoard(data.board_greedy, gameBoard1);
+
+                const $button = $(directionToButtonId[direction]);
                 $button.stop(true, true).css("background-color", "#00ff00").delay(100).animate({ backgroundColor: "" }, 100);
-    
-                if (data.solved) {
+
+                if(data.solved || data.solved_greedy) {
                     $("#message-text").text("Puzzle solved!").css("background-color", "#00ff00").show();
                     gameActive = false;
                 }
+
             } else {
                 $("#message-text").text("Move not possible").css("background-color", "#ff0000").show();
             }
@@ -162,12 +164,15 @@ $(document).ready(function() {
     }
     
 
-    function updateBoard(board, isGreedy = false) {
-        let boardDiv1 = gameBoard1; // Use the first game board
-        let boardDiv2 = gameBoard2; // Use the second game board
-        updateSingleBoard(board, boardDiv1);
-        updateSingleBoard(board, boardDiv2);
-    }
+    // function updateBoard(board1, board2, isGreedy = false, isIDA = false) {
+    //     if (isGreedy) {
+    //         updateSingleBoard(board1, gameBoard1);
+    //     }
+    //     if (isIDA) {
+    //         updateSingleBoard(board2, gameBoard2);
+    //     }
+    // }
+
     function updateSingleBoard(board, boardDiv) {
         boardDiv.empty().css({
             'display': 'grid',
@@ -180,7 +185,6 @@ $(document).ready(function() {
             });
         });
     }
-
      function moveDirection(move) {
         const directionMap = {
             '1,0': 'D',
