@@ -1,5 +1,3 @@
-#import model
-# import NPuzzleSolvers
 import pickle
 import heapq
 from time import perf_counter_ns
@@ -9,6 +7,7 @@ INF = 100000
 groups = []
 patternDbDict = []
 
+# IDA* Code created by Michael Schrandt - https://github.com/mschrandt/NPuzzle/tree/main
 class State:
     def __init__(self, puzzle, g, h, moves=[]):
         self.puzzle = puzzle
@@ -23,12 +22,9 @@ class State:
 def init(boardSize):
     global groups
     global patternDbDict
-    print("Initializing pattern DB...")
     with open("patternDb_"+str(boardSize)+".dat", "rb") as patternDbFile:
         groups = pickle.load(patternDbFile)
         patternDbDict = pickle.load(patternDbFile)
-        for i in range(len(patternDbDict)):
-            print("Group {}: {}, {:,} entries.".format(i,groups[i],len(patternDbDict[i])))
 
 def idaStar(puzzle):
     if puzzle.checkWin():
@@ -105,6 +101,7 @@ def search(path, g, bound, dirs, tree_node):
     return min
 
 
+#Greedy Algorithm code created by Joel Peckham - https://github.com/joelpeckham/8puzzle
 def greedyFirstBest(puzzle):
     if puzzle.checkWin():
         return [], 0, puzzle

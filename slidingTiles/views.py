@@ -7,8 +7,8 @@ import json
 import logging
 import os
 
-
 from slidingTiles.SlidingGrid import slidingGrid
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,6 @@ def start_game(request):
     return JsonResponse({'board': game.board, 'board_greedy': game.board})
 
 def shuffle(request):
-    #rows = int(request.GET.get('rows', 4))
-    #cols = int(request.GET.get('cols', 4))
     numShuffles = int(request.GET.get('shuffles', 0))
     grid = json.loads(request.session.get('game_board'))
     grid_2 = json.loads(request.session.get('game_board_greedy'))

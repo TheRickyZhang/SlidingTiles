@@ -1,14 +1,13 @@
 from random import choice
 from copy import deepcopy
 
-
+#slidingGrid is the data structure for our grid
 class slidingGrid:
-    # Initializes grid with numbers from 0 to rows*cols - 1, where 0 is the empty space
+    # (y,x) directions
     UP = (1, 0)
     DOWN = (-1, 0)
     LEFT = (0, -1)
     RIGHT = (0, 1)
-
     DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
     def __init__(self, boardSize=4, shuffle=0, grid_=None):
@@ -48,9 +47,6 @@ class slidingGrid:
             dir = choice(self.DIRECTIONS)
             self.move(dir)
 
-    def consoleprint(self):
-        for row in self.board:
-            print(' '.join(str(cell).rjust(2, ' ') for cell in row))
 
     def move(self, dir):
         if isinstance(dir, int):
@@ -64,20 +60,6 @@ class slidingGrid:
         self.board[self.blankPos[0]][self.blankPos[1]] = self.board[newBlankPos[0]][newBlankPos[1]]
         self.board[newBlankPos[0]][newBlankPos[1]] = 0
         self.blankPos = newBlankPos
-        return True
-
-    def moveSolve(self, moveList):
-        for i in range(len(moveList)):
-            self.move(moveList[i])
-            self.consoleprint()
-            print()
-            # Implement something that will change the board on website
-
-    def checkWin(self):
-        for i in range(self.boardSize):
-            for j in range(self.boardSize):
-                if self.board[i][j] != i * self.boardSize + j + 1 and self.board[i][j] != 0:
-                    return False
         return True
 
     def hash(self, group={}):
