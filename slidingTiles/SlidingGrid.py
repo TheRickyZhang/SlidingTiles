@@ -62,6 +62,17 @@ class slidingGrid:
         self.blankPos = newBlankPos
         return True
 
+    def moveSolve(self, moveList):
+        for i in range(len(moveList)):
+            self.move(moveList[i])
+
+    def checkWin(self):
+        for i in range(self.boardSize):
+            for j in range(self.boardSize):
+                if self.board[i][j] != i * self.boardSize + j + 1 and self.board[i][j] != 0:
+                    return False
+        return True
+
     def hash(self, group={}):
         if not group:
             group = {s for s in range(self.boardSize ** 2)}

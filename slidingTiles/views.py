@@ -1,18 +1,16 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 from slidingTiles import ai
 import json
 import logging
-import os
 
 from slidingTiles.SlidingGrid import slidingGrid
 
-
 logger = logging.getLogger(__name__)
 
-# New direction schema
+# direction schema (y,x)
 UP = (1, 0)
 DOWN = (-1, 0)
 LEFT = (0, 1)
@@ -36,8 +34,6 @@ def landing_view(request):
 
 # Expects: {rows, cols}
 def start_game(request):
-    #rows = int(request.GET.get('rows', 4))
-    #cols = int(request.GET.get('cols', 4))
     numShuffles = int(request.GET.get('shuffles', 0))
     game = slidingGrid(boardSize=4, shuffle=numShuffles, grid_=None)
     request.session['game_board'] = json.dumps(game.board)

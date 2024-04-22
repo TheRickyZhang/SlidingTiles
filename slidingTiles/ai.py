@@ -54,6 +54,8 @@ def idaStar(puzzle):
         elif rem == INF:
             return None, {}
         bound = rem
+
+# Performs the dfs part of the IDA* algorithm, managing the exploration of states.
 def search(path, g, bound, dirs, tree_node):
     cur = path[-1]
     f = g + hScore(cur)
@@ -153,7 +155,7 @@ def greedyFirstBest(puzzle):
 
     return None, 0, puzzle, decision_tree
 
-
+# Calculates the heuristic value for a given puzzle state, used by the search algorithms to estimate the distance to the goal state.
 def hScore(puzzle):
     h = 0
     for g in range(len(groups)):
