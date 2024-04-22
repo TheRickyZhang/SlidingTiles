@@ -10,8 +10,11 @@ from slidingTiles.SlidingGrid import slidingGrid
 
 logger = logging.getLogger(__name__)
 
-# This file essentially serves as a intermediary between game.js and ai.py. It takes info from game.js and sends it to ai.py,
-# sending the results back to game.js. It also handles the initial setup of the game board and the shuffling of the board.
+# This file essentially serves as a intermediary between game.js and ai.py. It takes info from game.js and sends it
+# to ai.py, sending the results back to game.js. It also handles the initial setup of the game board and the
+# shuffling of the board.
+
+# Note: board corresponds to the right (IDA*) board, board_greedy corresponds to the left (Greedy) board
 
 # direction schema (y,x)
 UP = (1, 0)

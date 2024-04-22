@@ -2,20 +2,21 @@ $(document).ready(function() {
     let rows = $('body').data('rows');
     let cols = $('body').data('cols');
     let gameActive = true;
-    let gameBoard1 = $('#game-board1'); // First game board
-    let gameBoard2 = $('#game-board2'); // Second game board
+    let gameBoard1 = $('#game-board1'); // Left game board
+    let gameBoard2 = $('#game-board2'); // Right game board
     let numShuffles = $('#shuffleSlider').val();
 
     let showTrees = false;
 
     initializeGame(rows, cols, numShuffles);
-    // Event listeners
 
+    // Event listeners
     $('#toggle-tree-button').click(function() {
         showTrees = !showTrees;
         console.log(showTrees);
         $("#message-text").text("Show trees: " + showTrees).css("background-color", "#64f78b").show();
     });
+
     $('.make-move-button').click(function() {
         let direction = $(this).data('direction');
         makeMove(direction, false, true, true); // updates both boards
@@ -54,9 +55,11 @@ $(document).ready(function() {
         let direction = directionMap[e.key];
         console.log('Direction:', direction);
         if (direction !== undefined) {
+            e.preventDefault();
             makeMove(direction, false, true, true); // Make move on both boards
         }
     });
+
     // runs when user presses the IDA* solve button
     $('#IDA-solve-button').click(function() {
         if (!gameActive) {
@@ -93,7 +96,7 @@ $(document).ready(function() {
     }
 
 
-    // solves the board using both the greedy and IDA* algorithms
+    // solves the board using both the greedy and IDA* algorithms sequentially
     function solveBoth() {
         gameActive = false;
         startGreedySolve(function() {
@@ -317,8 +320,8 @@ $(document).ready(function() {
             svgContainer.selectAll('.popup').remove();
             const [x, y] = d3.pointer(event, svgContainer.node());
 
-            const board = d.data.state; // assuming this is a 2D array representing the board
-            const tileSize = 20; // Size of each tile in the board grid
+            const board = d.data.state;
+            const tileSize = 20;
             const boardWidth = board[0].length * tileSize;
             const boardHeight = board.length * tileSize;
 
@@ -334,7 +337,7 @@ $(document).ready(function() {
                 .style('border', 'solid 1px black')
                 .style('padding', '10px')
 
-            // Draw each tile as a rectangle
+            // Draw each tile
             board.forEach((row, rowIndex) => {
                 row.forEach((tile, colIndex) => {
                     popup.append('rect')
