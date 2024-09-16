@@ -118,11 +118,11 @@ $(document).ready(function() {
                     $('#greedyTimeTaken').text(response.time);
                     $('#greedyNumMoves').text(response.numMoves);
                     // draws the tree on the left container
-                    if(showTrees){
-                        drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
-                    }
-                    // animates the solution on the greedy board
-                    animateSolution(response.moves, true, false, callback);
+                    // if(showTrees){
+                    //     drawDecisionTree(response.decisionTree, '#left-tree-svg-container');
+                    // }
+                    // // animates the solution on the greedy board
+                    // animateSolution(response.moves, true, false, callback);
                     if (!response.board_solved || !response.board_greedy_solved) {
                         gameActive = true;
                     }
@@ -147,11 +147,11 @@ $(document).ready(function() {
                 $('#idaTimeTaken').text(response.time);
                 $('#idaNumMoves').text(response.numMoves);
                 // draws tree on the right side
-                if(showTrees){
-                    drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
-                }
-                // animates the solution on the IDA* board
-                animateSolution(response.moves, false, true);
+                // if(showTrees){
+                //     drawDecisionTree(response.decisionTree, '#right-tree-svg-container');
+                // }
+                // // animates the solution on the IDA* board
+                // animateSolution(response.moves, false, true);
                 if (!response.board_solved || !response.board_greedy_solved) {
                     gameActive = true;
                 }
