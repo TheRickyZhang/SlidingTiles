@@ -2,6 +2,8 @@
 
 This Django application provides a graphical interface for the N-sliding tiles puzzle, with options for manual play, greedy solve, and IDA* solve.
 
+[![Sliding Tiles Image](https://github.com/TheRickyZhang/SlidingTiles/blob/main/static/SlidingTiles.png?raw=true)](https://github.com/TheRickyZhang/SlidingTiles)
+
 ## Getting Started
 
 Follow these instructions to get the project up and running on your local machine for development and testing purposes.
